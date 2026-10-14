@@ -6,6 +6,10 @@ An enterprise-grade, modern, and privacy-focused **Cybersecurity Platform** feat
 ![Security](https://img.shields.io/badge/Security-NIST%20SP%20800--63B-brightgreen)
 ![Client-Side](https://img.shields.io/badge/Zero--Knowledge-100%25%20In--Browser-purple)
 ![Dependencies](https://img.shields.io/badge/Dependencies-Zero%20(Pure%20Vanilla)-success)
+![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-blueviolet?logo=github)
+
+## 🌐 Live URL
+👉 **[https://yasalapurevanth97-coder.github.io/Password-checker/](https://yasalapurevanth97-coder.github.io/Password-checker/)**
 
 ---
 
