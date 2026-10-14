@@ -1,139 +1,106 @@
 /**
- * ShieldPass PRO - Enterprise Password Strength Checker & Generator
- * Comprehensive, Zero-Knowledge Client-Side Security Suite (No Login Required)
+ * PASSWORD STRENGTH CHECKER - Application Core Logic
+ * Fully In-Browser, Zero-Knowledge Privacy Architecture
+ * Only 4 Main Navigation Options: Home, Password Checker, Password Generator, History
+ * Web Crypto API CSPRNG & NIST SP 800-63B Analysis
  */
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // =========================================================================
-  // STATE MANAGEMENT & CRYPTO ENGINE
-  // =========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  'use strict';
 
-  const sessionState = {
-    sessionStartTime: Date.now(),
-    passwordsAnalyzed: 0,
-    passwordsGenerated: 0,
-    totalActions: 0,
-    categoryCounts: {
-      veryWeak: 0,
-      weak: 0,
-      medium: 0,
-      strong: 0,
-      veryStrong: 0
-    },
-    activityLog: []
+  // =========================================================================
+  // 1. STATE & CONSTANTS
+  // =========================================================================
+  const STORAGE_KEY = 'PasswordChecker_History_Records_v2';
+
+  // Common breached / dictionary passwords list
+  const COMMON_BREACHED_PASSWORDS = new Set([
+    'password', 'password1', '123456', '12345678', '123456789', '12345',
+    'qwerty', '111111', 'abc123', 'admin', 'welcome', 'login', 'iloveyou',
+    'master', 'sunshine', 'princess', 'football', 'monkey', 'charlie',
+    'donald', 'secret', 'pass123', 'trustno1', 'shadow', 'killer', 'superman',
+    'batman', 'starwars', 'letmein', 'access', 'default', 'security'
+  ]);
+
+  // Character sets
+  const CHAR_POOLS = {
+    upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    lower: 'abcdefghijklmnopqrstuvwxyz',
+    numbers: '0123456789',
+    symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?/~`',
+    ambiguous: '0Oo1lI|'
   };
 
-  // --- Cryptographic Helper Functions (Web Crypto API) ---
-  function bufferToHex(buffer) {
-    return Array.from(new Uint8Array(buffer))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-  }
-
-  // Cryptographically unbiased random integer in [0, max) via rejection sampling
-  function getSecureRandomInt(max) {
-    const array = new Uint32Array(1);
-    const maxUint = 0xFFFFFFFF;
-    const limit = maxUint - (maxUint % max);
-    let randomVal;
-    do {
-      window.crypto.getRandomValues(array);
-      randomVal = array[0];
-    } while (randomVal >= limit);
-    return randomVal % max;
-  }
+  let historyRecords = loadHistory();
+  let currentGeneratedPassword = '';
+  let isGenPasswordMasked = false;
+  let checkerSaveTimeout = null;
+  let lastCheckedPassword = '';
 
   // =========================================================================
-  // DOM REFERENCES
+  // 2. DOM REFERENCES
   // =========================================================================
-
   // Intro Screen
   const introScreen = document.getElementById('intro-screen');
+  const introCanvas = document.getElementById('intro-particles-canvas');
   const introProgressFill = document.getElementById('intro-progress-fill');
   const introStatusText = document.getElementById('intro-status-text');
   const introStatusPercent = document.getElementById('intro-status-percent');
   const btnSkipIntro = document.getElementById('btn-skip-intro');
-  const introCanvas = document.getElementById('intro-particles-canvas');
 
-  // Navbar
+  // Navigation
   const mainNavbar = document.getElementById('main-navbar');
   const navTabs = document.querySelectorAll('.nav-tab');
+  const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
   const btnMobileToggle = document.getElementById('btn-mobile-toggle');
   const mobileNavDrawer = document.getElementById('mobile-nav-drawer');
-  const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
 
   // View Panels
-  const appViewport = document.getElementById('app-viewport');
   const viewPanels = {
-    dashboard: document.getElementById('view-dashboard'),
+    home: document.getElementById('view-home'),
     checker: document.getElementById('view-checker'),
     generator: document.getElementById('view-generator'),
-    audit: document.getElementById('view-audit')
+    history: document.getElementById('view-history')
   };
 
-  // Dashboard Elements
-  const dashGreetingTime = document.getElementById('dash-greeting-time');
-  const statPasswordsAnalyzed = document.getElementById('stat-passwords-analyzed');
-  const statPasswordsGenerated = document.getElementById('stat-passwords-generated');
-  const statSessionDuration = document.getElementById('stat-session-duration');
-  const catCntVweak = document.getElementById('cat-cnt-vweak');
-  const catCntWeak = document.getElementById('cat-cnt-weak');
-  const catCntMed = document.getElementById('cat-cnt-med');
-  const catCntStrong = document.getElementById('cat-cnt-strong');
-  const catCntVstrong = document.getElementById('cat-cnt-vstrong');
-  const activityLogList = document.getElementById('activity-log-list');
-
-  // Dashboard Mini Quick Actions
-  const btnQuickCheck = document.getElementById('btn-quick-check');
-  const btnQuickGen = document.getElementById('btn-quick-gen');
-  const dashQuickInput = document.getElementById('dash-quick-input');
-  const dashQuickLabel = document.getElementById('dash-quick-label');
-  const dashMeterSegs = [
-    document.getElementById('dash-meter-seg-1'),
-    document.getElementById('dash-meter-seg-2'),
-    document.getElementById('dash-meter-seg-3'),
-    document.getElementById('dash-meter-seg-4'),
-    document.getElementById('dash-meter-seg-5')
-  ];
-  const btnJumpChecker = document.getElementById('btn-jump-checker');
-  const dashQuickGenDisplay = document.getElementById('dash-quick-gen-display');
-  const dashQuickCopy = document.getElementById('dash-quick-copy');
-  const dashQuickRegen = document.getElementById('dash-quick-regen');
-
-  // Password Checker View
+  // Password Checker
   const passwordInput = document.getElementById('password-input');
-  const inputFrame = document.getElementById('input-frame');
   const btnToggleVisibility = document.getElementById('btn-toggle-visibility');
-  const iconEyeShow = document.getElementById('icon-eye-show');
-  const iconEyeHide = document.getElementById('icon-eye-hide');
   const btnClear = document.getElementById('btn-clear');
-  const btnCopyInput = document.getElementById('btn-copy-input');
-  const btnReset = document.getElementById('btn-reset');
   const charCount = document.getElementById('char-count');
   const entropyValue = document.getElementById('entropy-value');
-
-  const strengthScorePercent = document.getElementById('strength-score-percent');
   const strengthLevelTag = document.getElementById('strength-level-tag');
-  const meterSegments = document.querySelectorAll('#strength-meter-section .meter-segment');
+  const strengthScorePercent = document.getElementById('strength-score-percent');
   const crackTimeValue = document.getElementById('crack-time-value');
   const crackTimeSub = document.getElementById('crack-time-sub');
-
-  const checklistProgress = document.getElementById('checklist-progress');
-  const checkLen8 = document.getElementById('check-len-8');
-  const checkLen12 = document.getElementById('check-len-12');
-  const checkUpper = document.getElementById('check-upper');
-  const checkLower = document.getElementById('check-lower');
-  const checkNumber = document.getElementById('check-number');
-  const checkSymbol = document.getElementById('check-symbol');
-  const checkPatterns = document.getElementById('check-patterns');
   const suggestionsContainer = document.getElementById('suggestions-container');
+  const checklistProgress = document.getElementById('checklist-progress');
 
-  // Generator View
+  const meterSegments = [
+    document.getElementById('meter-seg-1'),
+    document.getElementById('meter-seg-2'),
+    document.getElementById('meter-seg-3'),
+    document.getElementById('meter-seg-4'),
+    document.getElementById('meter-seg-5')
+  ];
+
+  const checkRows = {
+    len8: document.getElementById('check-len-8'),
+    len12: document.getElementById('check-len-12'),
+    upper: document.getElementById('check-upper'),
+    lower: document.getElementById('check-lower'),
+    number: document.getElementById('check-number'),
+    symbol: document.getElementById('check-symbol'),
+    patterns: document.getElementById('check-patterns')
+  };
+
+  // Password Generator
   const generatedPasswordText = document.getElementById('generated-password');
+  const genBitsBadge = document.getElementById('gen-bits-badge');
   const btnToggleGenView = document.getElementById('btn-toggle-gen-view');
-  const genViewLabel = document.getElementById('gen-view-label');
   const btnCopyGenerated = document.getElementById('btn-copy-generated');
-  const btnTestInChecker = document.getElementById('btn-test-in-checker');
+  const btnRegenIcon = document.getElementById('btn-regen-icon');
+  const iconRegenSpin = document.getElementById('icon-regen-spin');
   const genLengthSlider = document.getElementById('gen-length');
   const genLengthVal = document.getElementById('gen-length-val');
   const genUpper = document.getElementById('gen-upper');
@@ -142,94 +109,32 @@ document.addEventListener('DOMContentLoaded', async () => {
   const genSymbols = document.getElementById('gen-symbols');
   const genAvoidAmbiguous = document.getElementById('gen-avoid-ambiguous');
   const btnGeneratePassword = document.getElementById('btn-generate-password');
+  const btnTestInChecker = document.getElementById('btn-test-in-checker');
 
-  // Security Standards / Audit View
-  const profTotalActions = document.getElementById('prof-total-actions');
+  // History Elements
+  const historyItemsContainer = document.getElementById('history-items-container');
+  const historyEmptyState = document.getElementById('history-empty-state');
+  const countAll = document.getElementById('count-all');
+  const countChecks = document.getElementById('count-checks');
+  const countGenerated = document.getElementById('count-generated');
+  const filterBtns = document.querySelectorAll('.history-filter-btn');
+  const btnOpenClearModal = document.getElementById('btn-open-clear-modal');
 
-  // Modals
-  const modalPrivacy = document.getElementById('modal-privacy');
-  const modalAbout = document.getElementById('modal-about');
-  const btnOpenPrivacy = document.getElementById('btn-open-privacy');
-  const btnOpenAbout = document.getElementById('btn-open-about');
+  // Modal Elements
+  const modalClearHistory = document.getElementById('modal-clear-history');
+  const btnCancelClear = document.getElementById('btn-cancel-clear');
+  const btnConfirmClear = document.getElementById('btn-confirm-clear');
 
   // Toast Container
   const toastContainer = document.getElementById('toast-container');
 
-  // =========================================================================
-  // TOAST NOTIFICATIONS & HELPER FUNCTIONS
-  // =========================================================================
-
-  function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = `toast ${type === 'success' ? 'toast-success' : ''}`;
-    const iconSvg = type === 'success'
-      ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`
-      : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
-
-    toast.innerHTML = `${iconSvg}<span>${message}</span>`;
-    toastContainer.appendChild(toast);
-
-    setTimeout(() => {
-      toast.classList.add('toast-out');
-      toast.addEventListener('animationend', () => toast.remove());
-    }, 2800);
-  }
-
-  async function copyToClipboard(text, successMsg = 'Copied to clipboard!') {
-    if (!text) {
-      showToast('Nothing to copy!', 'info');
-      return;
-    }
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-      } else {
-        const temp = document.createElement('textarea');
-        temp.value = text;
-        temp.style.position = 'fixed';
-        temp.style.left = '-9999px';
-        document.body.appendChild(temp);
-        temp.focus();
-        temp.select();
-        document.execCommand('copy');
-        document.body.removeChild(temp);
-      }
-      showToast(successMsg, 'success');
-    } catch {
-      showToast('Unable to copy automatically', 'info');
-    }
-  }
-
-  function addSessionActivity(title) {
-    sessionState.totalActions++;
-    if (profTotalActions) {
-      profTotalActions.textContent = `${sessionState.totalActions} operations`;
-    }
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    sessionState.activityLog.unshift({ title, time: timeStr });
-    if (sessionState.activityLog.length > 20) sessionState.activityLog.pop();
-
-    const li = document.createElement('li');
-    li.className = 'activity-log-item';
-    li.innerHTML = `
-      <span class="activity-bullet blue"></span>
-      <div class="activity-body">
-        <span class="activity-title">${title}</span>
-        <span class="activity-time">${timeStr}</span>
-      </div>
-    `;
-    if (activityLogList.firstChild) {
-      activityLogList.insertBefore(li, activityLogList.firstChild);
-    } else {
-      activityLogList.appendChild(li);
-    }
-  }
+  let activeHistoryFilter = 'all';
 
   // =========================================================================
-  // 1. OPENING INTRO ANIMATION & PARTICLES CANVAS
+  // 3. CINEMATIC INTRO ANIMATION & PARTICLES
   // =========================================================================
-
-  let introCompleted = false;
+  let introAnimationRunning = true;
+  let particleReqId = null;
 
   function initIntroCanvas() {
     if (!introCanvas) return;
@@ -243,750 +148,1008 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     const particles = [];
-    const count = Math.min(50, Math.floor(width / 30));
+    const particleCount = Math.min(Math.floor((width * height) / 14000), 70);
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.6,
-        vy: (Math.random() - 0.5) * 0.6,
+        vx: (Math.random() - 0.5) * 0.7,
+        vy: (Math.random() - 0.5) * 0.7,
         radius: Math.random() * 2 + 1,
-        color: Math.random() > 0.5 ? '#8b5cf6' : '#06b6d4'
+        color: Math.random() > 0.5 ? '#8b5cf6' : '#06b6d4',
+        alpha: Math.random() * 0.6 + 0.2
       });
     }
 
-    function render() {
-      if (introCompleted) return;
+    function renderParticles() {
+      if (!introAnimationRunning) return;
       ctx.clearRect(0, 0, width, height);
 
-      // Draw subtle connecting lines
+      // Draw particle connections
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 110) {
+
+          if (dist < 120) {
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(139, 92, 246, ${0.18 * (1 - dist / 110)})`;
-            ctx.lineWidth = 1;
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(139, 92, 246, ${0.18 * (1 - dist / 120)})`;
+            ctx.lineWidth = 0.8;
             ctx.stroke();
           }
         }
       }
 
-      // Draw particles
-      particles.forEach(p => {
+      // Draw individual particles
+      for (const p of particles) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
         p.x += p.vx;
         p.y += p.vy;
+
         if (p.x < 0) p.x = width;
         if (p.x > width) p.x = 0;
         if (p.y < 0) p.y = height;
         if (p.y > height) p.y = 0;
+      }
 
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = p.color;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      });
-
-      requestAnimationFrame(render);
+      particleReqId = requestAnimationFrame(renderParticles);
     }
 
-    render();
+    renderParticles();
   }
 
-  function runIntroProgress() {
+  function startIntroProgress() {
+    if (!introScreen) return;
     initIntroCanvas();
-    let progress = 0;
+
     const stages = [
-      { at: 20, text: 'Initializing Cryptographic Engine...' },
-      { at: 50, text: 'Calibrating Entropy Heuristics...' },
-      { at: 75, text: 'Enforcing NIST SP 800-63B Guidelines...' },
-      { at: 92, text: 'Deploying Zero-Knowledge Environment...' },
-      { at: 100, text: 'System Initialized. Launching...' }
+      { pct: 25, text: 'Initializing Cryptographic Engine...' },
+      { pct: 55, text: 'Calibrating NIST SP 800-63B Rules...' },
+      { pct: 85, text: 'Synthesizing Entropy Pools...' },
+      { pct: 100, text: 'System Initialized. Welcome.' }
     ];
 
-    const interval = setInterval(() => {
-      if (introCompleted) {
-        clearInterval(interval);
+    let currentStage = 0;
+    let progress = 0;
+
+    const timer = setInterval(() => {
+      if (!introAnimationRunning) {
+        clearInterval(timer);
         return;
       }
-      progress += 2;
-      introProgressFill.style.width = `${progress}%`;
-      introStatusPercent.textContent = `${progress}%`;
 
-      const curStage = stages.find(s => progress <= s.at) || stages[stages.length - 1];
-      introStatusText.textContent = curStage.text;
+      progress += 2;
+      if (introProgressFill) introProgressFill.style.width = `${progress}%`;
+      if (introStatusPercent) introStatusPercent.textContent = `${progress}%`;
+
+      if (currentStage < stages.length && progress >= stages[currentStage].pct) {
+        if (introStatusText) introStatusText.textContent = stages[currentStage].text;
+        currentStage++;
+      }
 
       if (progress >= 100) {
-        clearInterval(interval);
-        setTimeout(finishIntro, 400);
+        clearInterval(timer);
+        setTimeout(dismissIntro, 400);
       }
-    }, 38);
+    }, 28);
+
+    if (btnSkipIntro) {
+      btnSkipIntro.addEventListener('click', dismissIntro);
+    }
   }
 
-  function finishIntro() {
-    if (introCompleted) return;
-    introCompleted = true;
-    introScreen.classList.add('fade-out');
-    setTimeout(() => {
-      introScreen.style.display = 'none';
-      switchView('dashboard');
-      addSessionActivity('Zero-Knowledge cybersecurity session initialized');
-      showToast('Welcome to ShieldPass PRO!', 'success');
-    }, 600);
+  function dismissIntro() {
+    if (!introAnimationRunning) return;
+    introAnimationRunning = false;
+    if (particleReqId) cancelAnimationFrame(particleReqId);
+
+    if (introScreen) {
+      introScreen.classList.add('fade-out');
+      setTimeout(() => {
+        introScreen.style.display = 'none';
+      }, 600);
+    }
   }
 
-  btnSkipIntro.addEventListener('click', finishIntro);
-  runIntroProgress();
-
   // =========================================================================
-  // 2. SPA ROUTING & VIEW NAVIGATION
+  // 4. SPA VIEW ROUTING (HOME, CHECKER, GENERATOR, HISTORY)
   // =========================================================================
-
   function switchView(viewName) {
-    if (!viewPanels[viewName]) return;
+    if (!viewPanels[viewName]) {
+      viewName = 'home';
+    }
 
-    // Toggle View Panels
+    // Update views
     Object.keys(viewPanels).forEach(key => {
-      viewPanels[key].classList.toggle('active', key === viewName);
+      const panel = viewPanels[key];
+      if (panel) {
+        if (key === viewName) {
+          panel.classList.add('active');
+        } else {
+          panel.classList.remove('active');
+        }
+      }
     });
 
-    // Toggle Desktop Nav Tabs
+    // Update desktop tabs
     navTabs.forEach(tab => {
-      tab.classList.toggle('active', tab.dataset.view === viewName);
+      if (tab.dataset.view === viewName) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
     });
 
-    // Toggle Mobile Nav Links
+    // Update mobile links
     mobileNavLinks.forEach(link => {
-      link.classList.toggle('active', link.dataset.view === viewName);
+      if (link.dataset.view === viewName) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
     });
 
-    mobileNavDrawer.classList.remove('open');
+    // Close mobile drawer
+    if (mobileNavDrawer) {
+      mobileNavDrawer.classList.remove('open');
+    }
+
+    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Update URL Hash without reload
+    if (window.location.hash !== `#${viewName}`) {
+      history.pushState(null, null, `#${viewName}`);
+    }
+
+    // If switching to History, refresh records list
+    if (viewName === 'history') {
+      renderHistoryList();
+    }
   }
 
+  // Attach nav link events
   navTabs.forEach(tab => {
     tab.addEventListener('click', () => switchView(tab.dataset.view));
   });
 
   mobileNavLinks.forEach(link => {
-    if (link.dataset.view) {
-      link.addEventListener('click', () => switchView(link.dataset.view));
-    }
+    link.addEventListener('click', () => switchView(link.dataset.view));
   });
 
-  document.querySelectorAll('.btn-nav-to, .footer-link-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (btn.dataset.view) switchView(btn.dataset.view);
+  // Mobile menu drawer toggle
+  if (btnMobileToggle && mobileNavDrawer) {
+    btnMobileToggle.addEventListener('click', () => {
+      mobileNavDrawer.classList.toggle('open');
     });
+  }
+
+  // Generic data-navigate buttons
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-navigate]');
+    if (btn) {
+      e.preventDefault();
+      const targetView = btn.dataset.navigate;
+      switchView(targetView);
+    }
   });
 
-  btnQuickCheck.addEventListener('click', () => switchView('checker'));
-  btnQuickGen.addEventListener('click', () => switchView('generator'));
-  btnJumpChecker.addEventListener('click', () => switchView('checker'));
-
-  btnMobileToggle.addEventListener('click', () => {
-    mobileNavDrawer.classList.toggle('open');
+  // Handle URL hash changes
+  window.addEventListener('hashchange', () => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && viewPanels[hash]) {
+      switchView(hash);
+    }
   });
 
-  // Live Stopwatch for Active Session Duration
-  setInterval(() => {
-    const diffSec = Math.floor((Date.now() - sessionState.sessionStartTime) / 1000);
-    const m = String(Math.floor(diffSec / 60)).padStart(2, '0');
-    const s = String(diffSec % 60).padStart(2, '0');
-    if (statSessionDuration) statSessionDuration.textContent = `${m}:${s}`;
-  }, 1000);
+  // =========================================================================
+  // 5. TOAST NOTIFICATIONS
+  // =========================================================================
+  function showToast(message, type = 'normal') {
+    if (!toastContainer) return;
 
-  // Dynamic Greeting based on time of day
-  const hour = new Date().getHours();
-  if (hour < 12) dashGreetingTime.textContent = 'Good morning';
-  else if (hour < 18) dashGreetingTime.textContent = 'Good afternoon';
-  else dashGreetingTime.textContent = 'Good evening';
+    const toast = document.createElement('div');
+    toast.className = `toast ${type === 'success' ? 'toast-success' : ''}`;
+    
+    const iconSvg = type === 'success' 
+      ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+      : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+
+    toast.innerHTML = `${iconSvg}<span>${message}</span>`;
+    toastContainer.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('toast-out');
+      setTimeout(() => toast.remove(), 300);
+    }, 2800);
+  }
 
   // =========================================================================
-  // 4. PASSWORD STRENGTH ANALYSIS ENGINE (NIST & Shannon Entropy)
+  // 6. PASSWORD STRENGTH CHECKER ENGINE
   // =========================================================================
-
-  const COMMON_PASSWORDS = new Set([
-    'password', '123456', '123456789', '12345678', '12345', 'qwerty',
-    'admin', 'welcome', 'letmein', 'monkey', 'iloveyou', 'starwars',
-    'dragon', 'football', 'master', 'sunshine', 'princess', 'solo',
-    'shadow', 'secret', 'hunter2', 'pass123', 'access', 'computer',
-    'login', 'root', 'superman', 'batman', 'trustno1', 'killer'
-  ]);
-
-  const KEYBOARD_SEQUENCES = [
-    'qwerty', 'asdfgh', 'zxcvbn', 'qwertyuiop',
-    '123456', '234567', '345678', '456789', '567890',
-    'abcdef', 'bcdefg', 'cdefgh', 'defghi', 'efghij'
-  ];
-
-  function hasSequentialAlphabet(pwd) {
-    const lower = pwd.toLowerCase();
-    for (let i = 0; i < lower.length - 2; i++) {
-      const c1 = lower.charCodeAt(i);
-      const c2 = lower.charCodeAt(i + 1);
-      const c3 = lower.charCodeAt(i + 2);
-      if (c1 >= 97 && c1 <= 120 && c2 === c1 + 1 && c3 === c1 + 2) return true;
-      if (c1 >= 99 && c1 <= 122 && c2 === c1 - 1 && c3 === c1 - 2) return true;
-    }
-    return false;
-  }
-
-  function hasSequentialNumbers(pwd) {
-    for (let i = 0; i < pwd.length - 2; i++) {
-      const c1 = pwd.charCodeAt(i);
-      const c2 = pwd.charCodeAt(i + 1);
-      const c3 = pwd.charCodeAt(i + 2);
-      if (c1 >= 48 && c1 <= 55 && c2 === c1 + 1 && c3 === c1 + 2) return true;
-      if (c1 >= 50 && c1 <= 57 && c2 === c1 - 1 && c3 === c1 - 2) return true;
-    }
-    return false;
-  }
-
-  function hasRepeatedChars(pwd) {
-    return /(.)\1\1/.test(pwd);
-  }
-
-  function containsCommonPassword(pwd) {
-    const lower = pwd.toLowerCase();
-    if (COMMON_PASSWORDS.has(lower)) return true;
-    for (const seq of KEYBOARD_SEQUENCES) {
-      if (lower.includes(seq)) return true;
-    }
-    return false;
-  }
-
   function calculateEntropy(pwd) {
     if (!pwd) return 0;
+    const len = pwd.length;
     let poolSize = 0;
     if (/[a-z]/.test(pwd)) poolSize += 26;
     if (/[A-Z]/.test(pwd)) poolSize += 26;
     if (/[0-9]/.test(pwd)) poolSize += 10;
     if (/[^a-zA-Z0-9]/.test(pwd)) poolSize += 33;
     if (poolSize === 0) return 0;
-    return Math.round(pwd.length * Math.log2(poolSize));
+
+    // Charset entropy: H = L * log2(poolSize)
+    const charsetEntropy = len * Math.log2(poolSize);
+
+    // Shannon entropy: -sum(p * log2(p))
+    const freq = {};
+    for (const char of pwd) {
+      freq[char] = (freq[char] || 0) + 1;
+    }
+    let shannon = 0;
+    for (const char in freq) {
+      const p = freq[char] / len;
+      shannon -= p * Math.log2(p);
+    }
+    const adjustedShannon = shannon * len;
+
+    // Use conservative blend
+    return Math.round(Math.min(charsetEntropy, adjustedShannon * 1.15));
   }
 
-  function calculateCrackTime(pwd) {
-    if (!pwd || pwd.length === 0) {
-      return { text: 'Instant (0 seconds)', sub: 'Enter a password to evaluate' };
+  function estimateCrackTime(entropyBits) {
+    if (entropyBits <= 0) return { timeStr: 'Instant (0 seconds)', subText: 'Enter a password to evaluate brute-force resistance' };
+    
+    // 10 Billion guesses per second (modern GPU cluster)
+    const guessesPerSec = 1e10;
+    const totalCombinations = Math.pow(2, entropyBits);
+    const seconds = totalCombinations / (2 * guessesPerSec);
+
+    if (seconds < 1) {
+      return { timeStr: 'Instant (< 1 second)', subText: 'Vulnerable to immediate offline hash cracking' };
+    } else if (seconds < 60) {
+      return { timeStr: `${Math.round(seconds)} seconds`, subText: 'Compromised within a single coffee break' };
+    } else if (seconds < 3600) {
+      return { timeStr: `${Math.round(seconds / 60)} minutes`, subText: 'Extremely vulnerable to consumer-grade hardware' };
+    } else if (seconds < 86400) {
+      return { timeStr: `${Math.round(seconds / 3600)} hours`, subText: 'Vulnerable to dedicated dictionary/mask attacks' };
+    } else if (seconds < 31536000) {
+      return { timeStr: `${Math.round(seconds / 86400)} days`, subText: 'Moderate brute-force protection' };
+    } else if (seconds < 31536000 * 100) {
+      return { timeStr: `${Math.round(seconds / 31536000)} years`, subText: 'Solid enterprise-level defense' };
+    } else if (seconds < 31536000 * 1e6) {
+      return { timeStr: `${Math.round(seconds / (31536000 * 1000))} Thousand years`, subText: 'Virtually unbreakable under modern computational models' };
+    } else {
+      return { timeStr: 'Trillions of years', subText: 'Mathematically immune to brute-force cluster attacks' };
     }
-
-    const guessesPerSec = 1e10; // 10 billion guesses/sec GPU cluster
-    let poolSize = 0;
-    if (/[a-z]/.test(pwd)) poolSize += 26;
-    if (/[A-Z]/.test(pwd)) poolSize += 26;
-    if (/[0-9]/.test(pwd)) poolSize += 10;
-    if (/[^a-zA-Z0-9]/.test(pwd)) poolSize += 33;
-    if (poolSize === 0) poolSize = 1;
-
-    const totalCombinations = Math.pow(poolSize, Math.min(pwd.length, 30));
-    const seconds = (totalCombinations / 2) / guessesPerSec;
-
-    if (containsCommonPassword(pwd) || pwd.length < 5) {
-      return { text: 'Instantly (< 1 millisecond)', sub: 'Flawed by common dictionary entry or tiny length' };
-    }
-    if (seconds < 1) return { text: 'Instantly (< 1 second)', sub: 'Trivially vulnerable to brute-force' };
-    if (seconds < 60) return { text: `${Math.round(seconds)} seconds`, sub: 'Can be cracked within seconds' };
-    if (seconds < 3600) return { text: `${Math.round(seconds / 60)} minutes`, sub: 'Can be cracked within minutes' };
-    if (seconds < 86400) return { text: `${Math.round(seconds / 3600)} hours`, sub: 'Cracked within standard work shifts' };
-    if (seconds < 31536000) return { text: `${Math.round(seconds / 86400)} days`, sub: 'Moderately resistant against casual attacks' };
-    if (seconds < 31536000 * 100) return { text: `${Math.round(seconds / 31536000)} years`, sub: 'Highly resistant against modern GPU clusters' };
-    if (seconds < 31536000 * 1e6) return { text: `${Math.round(seconds / (31536000 * 1000))} thousand years`, sub: 'Unbreakable against current computing capacity' };
-    return { text: 'Millions of Centuries', sub: 'Cryptographically impenetrable to brute force' };
   }
 
   function evaluatePassword(pwd) {
-    const hasLen8 = pwd.length >= 8;
-    const hasLen12 = pwd.length >= 12;
+    if (!pwd) {
+      return {
+        score: 0,
+        level: 'Awaiting Input',
+        levelClass: '',
+        entropy: 0,
+        crackTime: { timeStr: 'Instant (0 seconds)', subText: 'Enter a password to evaluate brute-force resistance' },
+        checklist: {
+          len8: false,
+          len12: false,
+          upper: false,
+          lower: false,
+          number: false,
+          symbol: false,
+          patterns: false
+        },
+        passedCount: 0,
+        suggestions: ['Enter at least 8 characters to begin cryptographic evaluation.']
+      };
+    }
+
+    const len = pwd.length;
     const hasUpper = /[A-Z]/.test(pwd);
     const hasLower = /[a-z]/.test(pwd);
     const hasNumber = /[0-9]/.test(pwd);
     const hasSymbol = /[^a-zA-Z0-9]/.test(pwd);
+    const isLen8 = len >= 8;
+    const isLen12 = len >= 12;
 
-    const hasSeqAlpha = hasSequentialAlphabet(pwd);
-    const hasSeqNum = hasSequentialNumbers(pwd);
-    const hasRepeats = hasRepeatedChars(pwd);
-    const isCommon = containsCommonPassword(pwd);
-    const avoidsPatterns = !hasSeqAlpha && !hasSeqNum && !hasRepeats && !isCommon && pwd.length > 0;
+    // Pattern & Breached Check
+    const lowerTrim = pwd.toLowerCase().trim();
+    const isBreached = COMMON_BREACHED_PASSWORDS.has(lowerTrim);
+    const hasRepeats = /(.)\1{2,}/.test(pwd); // 3 repeated characters e.g. aaa
+    const hasSequence = /(012|123|234|345|456|567|678|789|abc|bcd|cde|def|efg|fgh|ghi|qwe|wer|ert)/i.test(pwd);
+    const avoidsPatterns = !isBreached && !hasRepeats && !hasSequence;
 
-    let rawScore = 0;
-    if (pwd.length >= 16) rawScore += 35;
-    else if (pwd.length >= 12) rawScore += 25;
-    else if (pwd.length >= 8) rawScore += 15;
-    else rawScore += pwd.length * 1.5;
+    const checklist = {
+      len8: isLen8,
+      len12: isLen12,
+      upper: hasUpper,
+      lower: hasLower,
+      number: hasNumber,
+      symbol: hasSymbol,
+      patterns: avoidsPatterns
+    };
 
-    let varietyCount = 0;
-    if (hasLower) { rawScore += 12; varietyCount++; }
-    if (hasUpper) { rawScore += 12; varietyCount++; }
-    if (hasNumber) { rawScore += 12; varietyCount++; }
-    if (hasSymbol) { rawScore += 15; varietyCount++; }
-    if (varietyCount >= 4) rawScore += 8;
+    let passedCount = 0;
+    Object.values(checklist).forEach(v => { if (v) passedCount++; });
 
-    if (isCommon) rawScore = Math.min(rawScore, 15);
-    if (hasSeqAlpha) rawScore -= 12;
-    if (hasSeqNum) rawScore -= 12;
-    if (hasRepeats) rawScore -= 10;
+    // Scoring calculation (0 - 100)
+    let score = 0;
 
-    let score = Math.max(0, Math.min(100, Math.round(rawScore)));
+    // Length contribution
+    if (len >= 8) score += 15;
+    if (len >= 12) score += 15;
+    if (len >= 16) score += 15;
+    if (len >= 20) score += 5;
 
-    let levelIndex = 0;
-    let levelName = 'Awaiting Input';
-    let levelClass = 'strength-none';
-    let categoryKey = null;
+    // Character pools
+    if (hasLower) score += 10;
+    if (hasUpper) score += 10;
+    if (hasNumber) score += 10;
+    if (hasSymbol) score += 15;
 
-    if (pwd.length === 0) {
-      levelIndex = 0;
-      levelName = 'Awaiting Input';
-      levelClass = 'strength-none';
-      score = 0;
-    } else if (score < 25 || pwd.length < 6 || isCommon) {
-      levelIndex = 1;
-      levelName = 'Very Weak';
-      levelClass = 'strength-very-weak';
-      categoryKey = 'veryWeak';
-    } else if (score < 50 || pwd.length < 8) {
-      levelIndex = 2;
-      levelName = 'Weak';
-      levelClass = 'strength-weak';
-      categoryKey = 'weak';
-    } else if (score < 72 || varietyCount < 3) {
-      levelIndex = 3;
-      levelName = 'Medium';
-      levelClass = 'strength-medium';
-      categoryKey = 'medium';
-    } else if (score < 90 || !hasLen12) {
-      levelIndex = 4;
-      levelName = 'Strong';
-      levelClass = 'strength-strong';
-      categoryKey = 'strong';
+    // Pattern bonus / penalties
+    if (avoidsPatterns) {
+      score += 10;
     } else {
-      levelIndex = 5;
-      levelName = 'Very Strong';
-      levelClass = 'strength-very-strong';
-      categoryKey = 'veryStrong';
+      score = Math.max(0, score - 25);
     }
+
+    if (isBreached) {
+      score = Math.min(score, 15);
+    }
+
+    score = Math.max(0, Math.min(100, score));
+
+    // 5-Tier Level Assignment
+    let level = 'Very Weak';
+    let levelClass = 'vweak';
+
+    if (score >= 85 && passedCount >= 6) {
+      level = 'Very Strong';
+      levelClass = 'vstrong';
+    } else if (score >= 65 && passedCount >= 4) {
+      level = 'Strong';
+      levelClass = 'strong';
+    } else if (score >= 45) {
+      level = 'Medium';
+      levelClass = 'med';
+    } else if (score >= 25) {
+      level = 'Weak';
+      levelClass = 'weak';
+    } else {
+      level = 'Very Weak';
+      levelClass = 'vweak';
+    }
+
+    // Dynamic suggestions
+    const suggestions = [];
+    if (isBreached) {
+      suggestions.push({ type: 'warn', text: 'This is a commonly breached password. Never use widely known phrases.' });
+    }
+    if (hasRepeats) {
+      suggestions.push({ type: 'warn', text: 'Avoid repeating identical characters consecutively (e.g. "aaa").' });
+    }
+    if (hasSequence) {
+      suggestions.push({ type: 'warn', text: 'Avoid keyboard sequences like "123", "abc", or "qwerty".' });
+    }
+    if (!isLen12) {
+      suggestions.push({ type: 'warn', text: 'Increase password length to 12 or more characters for exponentially higher brute-force resistance.' });
+    }
+    if (!hasUpper || !hasLower) {
+      suggestions.push({ type: 'warn', text: 'Mix both uppercase (A-Z) and lowercase (a-z) letters.' });
+    }
+    if (!hasNumber) {
+      suggestions.push({ type: 'warn', text: 'Include at least one numeric digit (0-9).' });
+    }
+    if (!hasSymbol) {
+      suggestions.push({ type: 'warn', text: 'Add special symbols (!@#$%^&*) to expand the cryptographic search space.' });
+    }
+    if (score >= 85 && avoidsPatterns) {
+      suggestions.push({ type: 'good', text: 'Excellent! This credential satisfies enterprise-grade NIST SP 800-63B standards.' });
+      suggestions.push({ type: 'info', text: 'Ensure this unique password is not reused across other accounts.' });
+    }
+
+    const entropy = calculateEntropy(pwd);
+    const crackTime = estimateCrackTime(entropy);
 
     return {
       score,
-      levelIndex,
-      levelName,
+      level,
       levelClass,
-      categoryKey,
-      checks: { hasLen8, hasLen12, hasUpper, hasLower, hasNumber, hasSymbol, avoidsPatterns },
-      flaws: { hasSeqAlpha, hasSeqNum, hasRepeats, isCommon }
+      entropy,
+      crackTime,
+      checklist,
+      passedCount,
+      suggestions
     };
   }
 
-  function generateSuggestions(pwd, analysis) {
-    if (!pwd || pwd.length === 0) return [];
-    const tips = [];
-    const { checks, flaws } = analysis;
-
-    if (flaws.isCommon) {
-      tips.push({
-        type: 'warning',
-        text: 'This matches a commonly breached password or standard keyboard pattern. Attackers test this in first attempts.'
-      });
-    }
-
-    if (pwd.length < 8) {
-      tips.push({
-        type: 'warning',
-        text: 'Your password is too short. Use at least 8 characters, or ideally 12+ for dependable safety.'
-      });
-    } else if (pwd.length < 12) {
-      tips.push({
-        type: 'tip',
-        text: 'Increase length to 12 or more characters. Length provides exponential resistance against brute-force.'
-      });
-    }
-
-    if (!checks.hasUpper && !checks.hasLower) {
-      tips.push({
-        type: 'tip',
-        text: 'Combine both uppercase (A–Z) and lowercase (a–z) letters to increase complexity.'
-      });
-    } else if (!checks.hasUpper) {
-      tips.push({
-        type: 'tip',
-        text: 'Add uppercase letters (A–Z) to expand the character search pool.'
-      });
-    } else if (!checks.hasLower) {
-      tips.push({
-        type: 'tip',
-        text: 'Add lowercase letters (a–z) to balance character diversity.'
-      });
-    }
-
-    if (!checks.hasNumber) {
-      tips.push({ type: 'tip', text: 'Incorporate numeric digits (0–9) throughout the password.' });
-    }
-
-    if (!checks.hasSymbol) {
-      tips.push({ type: 'tip', text: 'Include special characters (such as @, #, $, %, &, *) to dramatically raise entropy.' });
-    }
-
-    if (flaws.hasSeqAlpha || flaws.hasSeqNum) {
-      tips.push({ type: 'warning', text: 'Avoid predictable sequences such as "123", "abc", or consecutive keyboard runs.' });
-    }
-
-    if (flaws.hasRepeats) {
-      tips.push({ type: 'warning', text: 'Avoid repeating identical characters consecutively (e.g. "aaa" or "111").' });
-    }
-
-    if (tips.length === 0 && analysis.levelIndex >= 4) {
-      tips.push({
-        type: 'success',
-        text: 'Outstanding password! It is long, complex, and free from predictable patterns.'
-      });
-      tips.push({
-        type: 'tip',
-        text: 'Tip: Consider using a password manager to store this credential safely without reusing it on other websites.'
-      });
-    }
-
-    return tips;
-  }
-
-  // Real-time UI synchronization
-  let lastEvaluatedString = '';
-  function updateCheckerUI() {
-    const pwd = passwordInput.value;
+  function updateCheckerUI(analysis, pwd) {
     const len = pwd.length;
 
-    btnClear.style.display = len > 0 ? 'flex' : 'none';
-    charCount.textContent = len;
-    const entropy = calculateEntropy(pwd);
-    entropyValue.textContent = `${entropy} bits`;
+    // Length & Entropy
+    if (charCount) charCount.textContent = `${len} character${len === 1 ? '' : 's'}`;
+    if (entropyValue) entropyValue.textContent = `${analysis.entropy} bits`;
 
-    const analysis = evaluatePassword(pwd);
-
-    // Update real session statistics on distinct evaluation
-    if (pwd.length >= 4 && pwd !== lastEvaluatedString) {
-      lastEvaluatedString = pwd;
-      sessionState.passwordsAnalyzed++;
-      statPasswordsAnalyzed.textContent = sessionState.passwordsAnalyzed;
-      profTotalActions.textContent = `${sessionState.passwordsAnalyzed + sessionState.passwordsGenerated} operations`;
-
-      if (analysis.categoryKey) {
-        sessionState.categoryCounts[analysis.categoryKey]++;
-        catCntVweak.textContent = sessionState.categoryCounts.veryWeak;
-        catCntWeak.textContent = sessionState.categoryCounts.weak;
-        catCntMed.textContent = sessionState.categoryCounts.medium;
-        catCntStrong.textContent = sessionState.categoryCounts.strong;
-        catCntVstrong.textContent = sessionState.categoryCounts.veryStrong;
+    // Strength tag & score percent
+    if (strengthScorePercent) strengthScorePercent.textContent = `${analysis.score}%`;
+    if (strengthLevelTag) {
+      strengthLevelTag.textContent = analysis.level;
+      strengthLevelTag.className = 'strength-level-tag';
+      if (analysis.levelClass) {
+        strengthLevelTag.classList.add(`fill-${analysis.levelClass}`);
       }
-      addSessionActivity(`Analyzed credential (${analysis.levelName}, ${entropy} bits)`);
     }
 
-    // Update Status Pill & Frame
-    strengthScorePercent.textContent = `${analysis.score}%`;
-    strengthLevelTag.textContent = analysis.levelName;
-    strengthLevelTag.className = `strength-badge-tag ${analysis.levelClass}`;
+    // Update 5-Segment Meter
+    const activeSegments = {
+      'Very Weak': 1,
+      'Weak': 2,
+      'Medium': 3,
+      'Strong': 4,
+      'Very Strong': 5
+    }[analysis.level] || (analysis.score > 0 ? 1 : 0);
 
-    inputFrame.className = 'input-glow-frame';
-    if (analysis.levelIndex > 0) {
-      const stateClasses = ['', 'state-very-weak', 'state-weak', 'state-medium', 'state-strong', 'state-very-strong'];
-      inputFrame.classList.add(stateClasses[analysis.levelIndex]);
-    }
-
-    // Segmented Meter
-    const activeClassMap = ['', 'active-very-weak', 'active-weak', 'active-medium', 'active-strong', 'active-very-strong'];
     meterSegments.forEach((seg, idx) => {
+      if (!seg) return;
       seg.className = 'meter-segment';
-      if (idx < analysis.levelIndex) {
-        seg.classList.add(activeClassMap[analysis.levelIndex]);
+      if (idx < activeSegments && analysis.levelClass) {
+        seg.classList.add(`fill-${analysis.levelClass}`);
       }
     });
 
     // Crack Time
-    const crackTime = calculateCrackTime(pwd);
-    crackTimeValue.textContent = crackTime.text;
-    crackTimeSub.textContent = crackTime.sub;
+    if (crackTimeValue) crackTimeValue.textContent = analysis.crackTime.timeStr;
+    if (crackTimeSub) crackTimeSub.textContent = analysis.crackTime.subText;
 
-    // Checklist
-    const checkMapping = [
-      { el: checkLen8, passed: analysis.checks.hasLen8 },
-      { el: checkLen12, passed: analysis.checks.hasLen12 },
-      { el: checkUpper, passed: analysis.checks.hasUpper },
-      { el: checkLower, passed: analysis.checks.hasLower },
-      { el: checkNumber, passed: analysis.checks.hasNumber },
-      { el: checkSymbol, passed: analysis.checks.hasSymbol },
-      { el: checkPatterns, passed: analysis.checks.avoidsPatterns }
-    ];
+    // Checklist badges
+    if (checklistProgress) {
+      checklistProgress.textContent = `${analysis.passedCount} of 7 Passed`;
+    }
 
-    let passedCount = 0;
-    checkMapping.forEach(({ el, passed }) => {
-      if (passed) {
-        el.classList.add('passed');
-        passedCount++;
+    const setCheckRow = (row, isPassed) => {
+      if (!row) return;
+      if (isPassed) {
+        row.classList.add('passed');
+        const icon = row.querySelector('.check-icon');
+        if (icon) icon.textContent = '✓';
       } else {
-        el.classList.remove('passed');
+        row.classList.remove('passed');
+        const icon = row.querySelector('.check-icon');
+        if (icon) icon.textContent = '✕';
       }
-    });
-    checklistProgress.textContent = `${passedCount}/7 Passed`;
+    };
 
-    // Suggestions
-    const suggestions = generateSuggestions(pwd, analysis);
-    if (suggestions.length === 0) {
-      suggestionsContainer.innerHTML = `
-        <div class="suggestion-empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="16" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-          </svg>
-          <p>Type a password above to receive real-time, personalized suggestions to maximize security.</p>
-        </div>
-      `;
-    } else {
-      const listHtml = suggestions.map(s => {
-        let iconSvg = '';
-        if (s.type === 'warning') {
-          iconSvg = `<svg class="suggestion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
-        } else if (s.type === 'success') {
-          iconSvg = `<svg class="suggestion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
-        } else {
-          iconSvg = `<svg class="suggestion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
-        }
-        return `
-          <li class="suggestion-item ${s.type}">
-            ${iconSvg}
-            <span>${s.text}</span>
-          </li>
-        `;
-      }).join('');
-      suggestionsContainer.innerHTML = `<ul class="suggestions-list">${listHtml}</ul>`;
+    setCheckRow(checkRows.len8, analysis.checklist.len8);
+    setCheckRow(checkRows.len12, analysis.checklist.len12);
+    setCheckRow(checkRows.upper, analysis.checklist.upper);
+    setCheckRow(checkRows.lower, analysis.checklist.lower);
+    setCheckRow(checkRows.number, analysis.checklist.number);
+    setCheckRow(checkRows.symbol, analysis.checklist.symbol);
+    setCheckRow(checkRows.patterns, analysis.checklist.patterns);
+
+    // Suggestions List
+    if (suggestionsContainer) {
+      suggestionsContainer.innerHTML = '';
+      analysis.suggestions.forEach(s => {
+        const li = document.createElement('li');
+        li.className = `suggestion-item ${typeof s === 'string' ? 'info' : s.type}`;
+        li.textContent = typeof s === 'string' ? s : s.text;
+        suggestionsContainer.appendChild(li);
+      });
     }
   }
 
-  // Synchronize Dashboard Quick Input Mini Checker
-  dashQuickInput.addEventListener('input', () => {
-    const val = dashQuickInput.value;
-    const analysis = evaluatePassword(val);
-    dashQuickLabel.textContent = `${analysis.score}% - ${analysis.levelName}`;
+  // Real-time input handling on passwordInput
+  if (passwordInput) {
+    passwordInput.addEventListener('input', () => {
+      const pwd = passwordInput.value;
+      const analysis = evaluatePassword(pwd);
+      updateCheckerUI(analysis, pwd);
 
-    const activeClasses = ['', 'active-very-weak', 'active-weak', 'active-medium', 'active-strong', 'active-very-strong'];
-    dashMeterSegs.forEach((seg, idx) => {
-      seg.className = 'meter-segment';
-      if (idx < analysis.levelIndex) {
-        seg.classList.add(activeClasses[analysis.levelIndex]);
+      // Debounce saving anonymous metadata to history
+      clearTimeout(checkerSaveTimeout);
+      if (pwd.length >= 3 && pwd !== lastCheckedPassword) {
+        checkerSaveTimeout = setTimeout(() => {
+          lastCheckedPassword = pwd;
+          saveAnonymousCheckRecord(analysis, pwd.length);
+        }, 1200);
       }
     });
-  });
+  }
 
-  // Main Checker Listeners
-  passwordInput.addEventListener('input', updateCheckerUI);
+  // Show/Hide password toggle
+  if (btnToggleVisibility && passwordInput) {
+    btnToggleVisibility.addEventListener('click', () => {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      
+      const eyeShow = btnToggleVisibility.querySelector('.eye-show');
+      const eyeHide = btnToggleVisibility.querySelector('.eye-hide');
+      if (eyeShow && eyeHide) {
+        eyeShow.style.display = isPassword ? 'none' : 'block';
+        eyeHide.style.display = isPassword ? 'block' : 'none';
+      }
+    });
+  }
 
-  btnToggleVisibility.addEventListener('click', () => {
-    const isPassword = passwordInput.getAttribute('type') === 'password';
-    passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-    iconEyeShow.style.display = isPassword ? 'none' : 'block';
-    iconEyeHide.style.display = isPassword ? 'block' : 'none';
-    passwordInput.focus();
-  });
-
-  btnClear.addEventListener('click', () => {
-    passwordInput.value = '';
-    updateCheckerUI();
-    passwordInput.focus();
-    showToast('Input cleared', 'info');
-  });
-
-  btnCopyInput.addEventListener('click', () => {
-    copyToClipboard(passwordInput.value, 'Password copied to clipboard!');
-  });
-
-  btnReset.addEventListener('click', () => {
-    passwordInput.value = '';
-    updateCheckerUI();
-    passwordInput.focus();
-    showToast('Analyzer reset', 'info');
-  });
+  // Clear password input button
+  if (btnClear && passwordInput) {
+    btnClear.addEventListener('click', () => {
+      passwordInput.value = '';
+      lastCheckedPassword = '';
+      clearTimeout(checkerSaveTimeout);
+      const emptyAnalysis = evaluatePassword('');
+      updateCheckerUI(emptyAnalysis, '');
+      passwordInput.focus();
+    });
+  }
 
   // =========================================================================
-  // 5. SECURE PASSWORD GENERATOR ENGINE (8 TO 64 CHARACTERS)
+  // 7. SECURE CSPRNG PASSWORD GENERATOR
   // =========================================================================
-
-  const CHARSETS = {
-    upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-    lower: 'abcdefghijklmnopqrstuvwxyz',
-    numbers: '0123456789',
-    symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?'
-  };
-  const AMBIGUOUS_REGEX = /[O0lI1|`'"]/;
+  function getSecureRandomInt(max) {
+    const array = new Uint32Array(1);
+    const maxUint = 0xFFFFFFFF;
+    const limit = maxUint - (maxUint % max);
+    let randomVal;
+    do {
+      window.crypto.getRandomValues(array);
+      randomVal = array[0];
+    } while (randomVal >= limit);
+    return randomVal % max;
+  }
 
   function generateSecurePassword() {
-    const length = parseInt(genLengthSlider.value, 10);
-    const useUpper = genUpper.checked;
-    const useLower = genLower.checked;
-    const useNumbers = genNumbers.checked;
-    const useSymbols = genSymbols.checked;
-    const avoidAmbiguous = genAvoidAmbiguous.checked;
+    const length = parseInt(genLengthSlider ? genLengthSlider.value : 20, 10);
+    const useUpper = genUpper ? genUpper.checked : true;
+    const useLower = genLower ? genLower.checked : true;
+    const useNumbers = genNumbers ? genNumbers.checked : true;
+    const useSymbols = genSymbols ? genSymbols.checked : true;
+    const avoidAmbiguous = genAvoidAmbiguous ? genAvoidAmbiguous.checked : false;
 
-    let availableSets = [];
-    let combinedPool = '';
-
-    if (useUpper) {
-      let pool = CHARSETS.upper;
-      if (avoidAmbiguous) pool = pool.replace(AMBIGUOUS_REGEX, '');
-      availableSets.push(pool);
-      combinedPool += pool;
-    }
-    if (useLower) {
-      let pool = CHARSETS.lower;
-      if (avoidAmbiguous) pool = pool.replace(AMBIGUOUS_REGEX, '');
-      availableSets.push(pool);
-      combinedPool += pool;
-    }
-    if (useNumbers) {
-      let pool = CHARSETS.numbers;
-      if (avoidAmbiguous) pool = pool.replace(AMBIGUOUS_REGEX, '');
-      availableSets.push(pool);
-      combinedPool += pool;
-    }
-    if (useSymbols) {
-      let pool = CHARSETS.symbols;
-      if (avoidAmbiguous) pool = pool.replace(AMBIGUOUS_REGEX, '');
-      availableSets.push(pool);
-      combinedPool += pool;
+    // Safety fallback: at least one pool must be selected
+    if (!useUpper && !useLower && !useNumbers && !useSymbols) {
+      if (genUpper) genUpper.checked = true;
+      showToast('At least one character type must remain selected', 'normal');
     }
 
-    if (combinedPool.length === 0) {
-      showToast('Please enable at least one character set!', 'info');
-      return '';
+    const activePools = [];
+    if (genUpper && genUpper.checked) {
+      let pool = CHAR_POOLS.upper;
+      if (avoidAmbiguous) pool = pool.replace(/[O|I]/g, '');
+      activePools.push(pool);
     }
+    if (genLower && genLower.checked) {
+      let pool = CHAR_POOLS.lower;
+      if (avoidAmbiguous) pool = pool.replace(/[o|l]/g, '');
+      activePools.push(pool);
+    }
+    if (genNumbers && genNumbers.checked) {
+      let pool = CHAR_POOLS.numbers;
+      if (avoidAmbiguous) pool = pool.replace(/[0|1]/g, '');
+      activePools.push(pool);
+    }
+    if (genSymbols && genSymbols.checked) {
+      let pool = CHAR_POOLS.symbols;
+      if (avoidAmbiguous) pool = pool.replace(/[|]/g, '');
+      activePools.push(pool);
+    }
+
+    const combinedPool = activePools.join('');
+    if (!combinedPool) return 'Secur3Pass!';
 
     const passwordChars = [];
 
-    // Ensure at least one from each selected pool
-    availableSets.forEach(set => {
-      const idx = getSecureRandomInt(set.length);
-      passwordChars.push(set[idx]);
+    // Ensure at least one character from each selected pool
+    activePools.forEach(pool => {
+      const idx = getSecureRandomInt(pool.length);
+      passwordChars.push(pool[idx]);
     });
 
-    // Fill remaining length
+    // Fill remaining length from combined pool
     while (passwordChars.length < length) {
       const idx = getSecureRandomInt(combinedPool.length);
       passwordChars.push(combinedPool[idx]);
     }
 
-    // Cryptographic Fisher-Yates Shuffle
+    // Fisher-Yates cryptographically secure shuffle
     for (let i = passwordChars.length - 1; i > 0; i--) {
       const j = getSecureRandomInt(i + 1);
-      const temp = passwordChars[i];
-      passwordChars[i] = passwordChars[j];
-      passwordChars[j] = temp;
+      [passwordChars[i], passwordChars[j]] = [passwordChars[j], passwordChars[i]];
     }
 
-    const finalPassword = passwordChars.join('');
-    generatedPasswordText.textContent = finalPassword;
-    dashQuickGenDisplay.textContent = finalPassword.substring(0, 20) + (finalPassword.length > 20 ? '...' : '');
+    currentGeneratedPassword = passwordChars.join('');
 
-    // Track usage
-    sessionState.passwordsGenerated++;
-    statPasswordsGenerated.textContent = sessionState.passwordsGenerated;
-    profTotalActions.textContent = `${sessionState.passwordsAnalyzed + sessionState.passwordsGenerated} operations`;
-    addSessionActivity(`Generated ${length}-character random credential`);
+    // Animate generation scrambling effect
+    animatePasswordReveal(currentGeneratedPassword);
 
-    btnGeneratePassword.classList.add('rotating');
-    setTimeout(() => btnGeneratePassword.classList.remove('rotating'), 500);
+    // Update entropy bits badge
+    const entropy = Math.round(length * Math.log2(combinedPool.length));
+    if (genBitsBadge) genBitsBadge.textContent = `Entropy: ~${entropy} bits`;
 
-    return finalPassword;
+    // Log anonymous generation metadata to History (Strict Zero-Knowledge)
+    saveAnonymousGenerationRecord(length, {
+      upper: genUpper ? genUpper.checked : true,
+      lower: genLower ? genLower.checked : true,
+      numbers: genNumbers ? genNumbers.checked : true,
+      symbols: genSymbols ? genSymbols.checked : true,
+      avoidAmbiguous
+    }, entropy);
   }
 
-  // Length slider change (8 to 64)
-  genLengthSlider.addEventListener('input', (e) => {
-    const val = e.target.value;
-    genLengthVal.textContent = `${val} characters`;
-    generateSecurePassword();
+  function animatePasswordReveal(finalPwd) {
+    if (!generatedPasswordText) return;
+    const glyphs = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*';
+    let iterations = 0;
+    const maxIterations = 6;
+
+    const interval = setInterval(() => {
+      if (isGenPasswordMasked) {
+        generatedPasswordText.textContent = '•'.repeat(finalPwd.length);
+        clearInterval(interval);
+        return;
+      }
+
+      generatedPasswordText.textContent = finalPwd
+        .split('')
+        .map((char, index) => {
+          if (index < (iterations / maxIterations) * finalPwd.length) {
+            return char;
+          }
+          return glyphs[getSecureRandomInt(glyphs.length)];
+        })
+        .join('');
+
+      iterations++;
+      if (iterations >= maxIterations) {
+        clearInterval(interval);
+        generatedPasswordText.textContent = isGenPasswordMasked ? '•'.repeat(finalPwd.length) : finalPwd;
+      }
+    }, 22);
+  }
+
+  // Generator slider listener
+  if (genLengthSlider && genLengthVal) {
+    genLengthSlider.addEventListener('input', () => {
+      genLengthVal.textContent = genLengthSlider.value;
+      generateSecurePassword();
+    });
+  }
+
+  // Generator option toggle listeners
+  [genUpper, genLower, genNumbers, genSymbols, genAvoidAmbiguous].forEach(toggle => {
+    if (toggle) {
+      toggle.addEventListener('change', () => generateSecurePassword());
+    }
   });
 
-  // Checkbox option toggles
-  [genUpper, genLower, genNumbers, genSymbols, genAvoidAmbiguous].forEach(cb => {
-    cb.addEventListener('change', () => {
-      if (!genUpper.checked && !genLower.checked && !genNumbers.checked && !genSymbols.checked) {
-        cb.checked = true;
-        showToast('At least one character set must remain enabled', 'info');
-        return;
+  // Big generate button
+  if (btnGeneratePassword) {
+    btnGeneratePassword.addEventListener('click', () => {
+      generateSecurePassword();
+    });
+  }
+
+  // Small spin regen icon
+  if (btnRegenIcon) {
+    btnRegenIcon.addEventListener('click', () => {
+      if (iconRegenSpin) {
+        iconRegenSpin.style.transform = 'rotate(360deg)';
+        iconRegenSpin.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+        setTimeout(() => {
+          iconRegenSpin.style.transform = '';
+          iconRegenSpin.style.transition = '';
+        }, 400);
       }
       generateSecurePassword();
     });
-  });
+  }
 
-  btnGeneratePassword.addEventListener('click', generateSecurePassword);
+  // Generator view mask toggle
+  if (btnToggleGenView && generatedPasswordText) {
+    btnToggleGenView.addEventListener('click', () => {
+      isGenPasswordMasked = !isGenPasswordMasked;
+      generatedPasswordText.textContent = isGenPasswordMasked 
+        ? '•'.repeat(currentGeneratedPassword.length) 
+        : currentGeneratedPassword;
 
-  // Show/Hide Generated Password
-  let genPasswordHidden = false;
-  btnToggleGenView.addEventListener('click', () => {
-    genPasswordHidden = !genPasswordHidden;
-    if (genPasswordHidden) {
-      generatedPasswordText.dataset.raw = generatedPasswordText.textContent;
-      generatedPasswordText.textContent = '•'.repeat(generatedPasswordText.dataset.raw.length);
-      genViewLabel.textContent = 'Show';
-    } else {
-      generatedPasswordText.textContent = generatedPasswordText.dataset.raw || generatedPasswordText.textContent;
-      genViewLabel.textContent = 'Hide';
-    }
-  });
+      const eyeShow = btnToggleGenView.querySelector('.eye-show');
+      const eyeHide = btnToggleGenView.querySelector('.eye-hide');
+      if (eyeShow && eyeHide) {
+        eyeShow.style.display = isGenPasswordMasked ? 'none' : 'block';
+        eyeHide.style.display = isGenPasswordMasked ? 'block' : 'none';
+      }
+    });
+  }
 
-  btnCopyGenerated.addEventListener('click', () => {
-    const pwd = generatedPasswordText.dataset.raw || generatedPasswordText.textContent;
-    if (pwd && pwd !== 'Generating...') {
-      copyToClipboard(pwd, 'Generated password copied!');
-    }
-  });
+  // Copy generated password to clipboard
+  if (btnCopyGenerated) {
+    btnCopyGenerated.addEventListener('click', async () => {
+      if (!currentGeneratedPassword) return;
+      try {
+        await navigator.clipboard.writeText(currentGeneratedPassword);
+        showToast('Password copied to clipboard securely!', 'success');
+      } catch (err) {
+        // Fallback for older or restricted environments
+        const textArea = document.createElement('textarea');
+        textArea.value = currentGeneratedPassword;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('Password copied to clipboard securely!', 'success');
+      }
+    });
+  }
 
-  // Test in Checker Button
-  btnTestInChecker.addEventListener('click', () => {
-    const pwd = generatedPasswordText.dataset.raw || generatedPasswordText.textContent;
-    if (pwd && pwd !== 'Generating...') {
-      passwordInput.value = pwd;
-      updateCheckerUI();
+  // "Test in Checker" Button
+  if (btnTestInChecker) {
+    btnTestInChecker.addEventListener('click', () => {
+      if (!currentGeneratedPassword) return;
       switchView('checker');
-      showToast('Loaded into Analyzer for inspection!', 'success');
+      if (passwordInput) {
+        passwordInput.value = currentGeneratedPassword;
+        passwordInput.type = 'text'; // Show it so user can see what was brought in
+        const eyeShow = btnToggleVisibility ? btnToggleVisibility.querySelector('.eye-show') : null;
+        const eyeHide = btnToggleVisibility ? btnToggleVisibility.querySelector('.eye-hide') : null;
+        if (eyeShow && eyeHide) {
+          eyeShow.style.display = 'none';
+          eyeHide.style.display = 'block';
+        }
+        const analysis = evaluatePassword(currentGeneratedPassword);
+        updateCheckerUI(analysis, currentGeneratedPassword);
+      }
+      showToast('Generated password loaded into Checker for evaluation', 'normal');
+    });
+  }
+
+  // =========================================================================
+  // 8. PRIVACY-PRESERVING HISTORY MANAGEMENT
+  // =========================================================================
+  function loadHistory() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      console.warn('LocalStorage error reading history:', e);
+      return [];
     }
-  });
+  }
 
-  // Dashboard quick generator actions
-  dashQuickRegen.addEventListener('click', generateSecurePassword);
-  dashQuickCopy.addEventListener('click', () => {
-    const pwd = generatedPasswordText.dataset.raw || generatedPasswordText.textContent;
-    copyToClipboard(pwd, 'Generated password copied!');
-  });
+  function saveHistoryToStorage() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(historyRecords));
+    } catch (e) {
+      console.warn('LocalStorage error writing history:', e);
+    }
+  }
 
-  // =========================================================================
-  // 6. PROFILE MANAGEMENT & MODALS
-  // =========================================================================
+  function saveAnonymousCheckRecord(analysis, length) {
+    // STRICT ZERO-KNOWLEDGE: Password string is NEVER stored!
+    const record = {
+      id: `chk_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+      type: 'check',
+      timestamp: Date.now(),
+      length: length,
+      strengthCategory: analysis.level,
+      levelClass: analysis.levelClass,
+      scorePercent: analysis.score,
+      entropyBits: analysis.entropy,
+      crackTime: analysis.crackTime.timeStr,
+      passedChecks: analysis.passedCount
+    };
 
-  // Generic modal close handlers
-  document.querySelectorAll('[data-close-modal]').forEach(btn => {
+    historyRecords.unshift(record);
+    if (historyRecords.length > 50) historyRecords.pop(); // Cap to 50 items
+    saveHistoryToStorage();
+    updateHistoryBadgeCounts();
+  }
+
+  function saveAnonymousGenerationRecord(length, options, entropyBits) {
+    // STRICT ZERO-KNOWLEDGE: Generated password is NEVER stored!
+    const record = {
+      id: `gen_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+      type: 'generate',
+      timestamp: Date.now(),
+      length: length,
+      charOptions: options,
+      entropyBits: entropyBits
+    };
+
+    historyRecords.unshift(record);
+    if (historyRecords.length > 50) historyRecords.pop(); // Cap to 50 items
+    saveHistoryToStorage();
+    updateHistoryBadgeCounts();
+  }
+
+  function updateHistoryBadgeCounts() {
+    const total = historyRecords.length;
+    const checks = historyRecords.filter(r => r.type === 'check').length;
+    const gens = historyRecords.filter(r => r.type === 'generate').length;
+
+    if (countAll) countAll.textContent = total;
+    if (countChecks) countChecks.textContent = checks;
+    if (countGenerated) countGenerated.textContent = gens;
+  }
+
+  function formatTimestamp(ts) {
+    const date = new Date(ts);
+    return date.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function renderHistoryList() {
+    updateHistoryBadgeCounts();
+
+    if (!historyItemsContainer || !historyEmptyState) return;
+
+    const filtered = historyRecords.filter(item => {
+      if (activeHistoryFilter === 'all') return true;
+      return item.type === activeHistoryFilter;
+    });
+
+    if (filtered.length === 0) {
+      historyItemsContainer.innerHTML = '';
+      historyEmptyState.style.display = 'flex';
+      return;
+    }
+
+    historyEmptyState.style.display = 'none';
+    historyItemsContainer.innerHTML = '';
+
+    filtered.forEach(record => {
+      const card = document.createElement('div');
+      card.className = 'history-item-card';
+
+      if (record.type === 'check') {
+        card.innerHTML = `
+          <div class="item-top-row">
+            <span class="item-type-badge check">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              <span>Password Analyzed</span>
+            </span>
+            <span class="item-time-stamp">${formatTimestamp(record.timestamp)}</span>
+          </div>
+
+          <div class="item-metrics-grid">
+            <div class="metric-cell">
+              <span class="metric-cell-label">Strength</span>
+              <span class="strength-pill ${record.levelClass || 'vweak'}">${record.strengthCategory || 'Unknown'}</span>
+            </div>
+            <div class="metric-cell">
+              <span class="metric-cell-label">Length</span>
+              <span class="metric-cell-val font-mono">${record.length} chars</span>
+            </div>
+            <div class="metric-cell">
+              <span class="metric-cell-label">Shannon Entropy</span>
+              <span class="metric-cell-val font-mono">${record.entropyBits || 0} bits</span>
+            </div>
+            <div class="metric-cell">
+              <span class="metric-cell-label">Checklist Score</span>
+              <span class="metric-cell-val font-mono">${record.passedChecks || 0}/7 Passed (${record.scorePercent || 0}%)</span>
+            </div>
+            <div class="metric-cell">
+              <span class="metric-cell-label">Cluster Crack Time</span>
+              <span class="metric-cell-val font-mono" style="color: #38bdf8;">${record.crackTime || 'Instant'}</span>
+            </div>
+          </div>
+        `;
+      } else {
+        const opts = record.charOptions || {};
+        card.innerHTML = `
+          <div class="item-top-row">
+            <span class="item-type-badge generate">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+              </svg>
+              <span>CSPRNG Generated</span>
+            </span>
+            <span class="item-time-stamp">${formatTimestamp(record.timestamp)}</span>
+          </div>
+
+          <div class="item-metrics-grid">
+            <div class="metric-cell">
+              <span class="metric-cell-label">Length</span>
+              <span class="metric-cell-val font-mono">${record.length} chars</span>
+            </div>
+            <div class="metric-cell">
+              <span class="metric-cell-label">Entropy</span>
+              <span class="metric-cell-val font-mono">${record.entropyBits || 0} bits</span>
+            </div>
+            <div class="metric-cell" style="grid-column: span 2;">
+              <span class="metric-cell-label">Character Pools Included</span>
+              <div class="item-options-tags" style="margin-top: 0.25rem;">
+                ${opts.upper ? '<span class="opt-tag">Uppercase (A-Z)</span>' : ''}
+                ${opts.lower ? '<span class="opt-tag">Lowercase (a-z)</span>' : ''}
+                ${opts.numbers ? '<span class="opt-tag">Numbers (0-9)</span>' : ''}
+                ${opts.symbols ? '<span class="opt-tag">Symbols (!@#)</span>' : ''}
+                ${opts.avoidAmbiguous ? '<span class="opt-tag">No Ambiguous</span>' : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      historyItemsContainer.appendChild(card);
+    });
+  }
+
+  // History Filter Buttons
+  filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      const modalId = btn.dataset.closeModal;
-      const modal = document.getElementById(modalId);
-      if (modal) modal.style.display = 'none';
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeHistoryFilter = btn.dataset.filter;
+      renderHistoryList();
     });
   });
 
-  // Privacy & About Modals
-  btnOpenPrivacy.addEventListener('click', () => {
-    modalPrivacy.style.display = 'flex';
-  });
+  // Clear History Modal handling
+  if (btnOpenClearModal && modalClearHistory) {
+    btnOpenClearModal.addEventListener('click', () => {
+      modalClearHistory.style.display = 'flex';
+    });
+  }
 
-  btnOpenAbout.addEventListener('click', () => {
-    modalAbout.style.display = 'flex';
-  });
+  if (btnCancelClear && modalClearHistory) {
+    btnCancelClear.addEventListener('click', () => {
+      modalClearHistory.style.display = 'none';
+    });
+  }
 
-  // Initialize Default Generator & Checker
+  if (btnConfirmClear && modalClearHistory) {
+    btnConfirmClear.addEventListener('click', () => {
+      historyRecords = [];
+      saveHistoryToStorage();
+      renderHistoryList();
+      modalClearHistory.style.display = 'none';
+      showToast('All activity history wiped from local device', 'success');
+    });
+  }
+
+  // Close modal when clicking backdrop
+  if (modalClearHistory) {
+    modalClearHistory.addEventListener('click', (e) => {
+      if (e.target === modalClearHistory) {
+        modalClearHistory.style.display = 'none';
+      }
+    });
+  }
+
+  // =========================================================================
+  // 9. INITIALIZATION ROUTINE
+  // =========================================================================
+  // Initialize default views & initial generator run
+  startIntroProgress();
   generateSecurePassword();
-  updateCheckerUI();
+  updateHistoryBadgeCounts();
+
+  // Route according to initial URL hash (default to 'home')
+  const initialHash = window.location.hash.replace('#', '');
+  if (initialHash && viewPanels[initialHash]) {
+    switchView(initialHash);
+  } else {
+    switchView('home');
+  }
 });

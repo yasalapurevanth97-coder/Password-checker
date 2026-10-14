@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Password Strength Checker | Enterprise Security Suite</title>
-  <meta name="description" content="Next-generation cybersecurity platform featuring real-time password strength analysis, PBKDF2 client-side authentication, and cryptographically secure password generation.">
-  <meta name="keywords" content="password strength checker, password security, cybersecurity, crypto generator, entropy, PBKDF2">
+  <title>Password Strength Checker | Secure Your Digital World</title>
+  <meta name="description" content="A commercial-grade cybersecurity platform featuring real-time password strength analysis, CSPRNG password generation, and privacy-first local history.">
+  <meta name="keywords" content="password strength checker, password generator, cybersecurity, entropy, password security">
 
   <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,14 +15,14 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Ambient background lighting effects -->
+  <!-- Ambient background glow & grid overlay -->
   <div class="bg-glow bg-glow-1" aria-hidden="true"></div>
   <div class="bg-glow bg-glow-2" aria-hidden="true"></div>
   <div class="bg-glow bg-glow-3" aria-hidden="true"></div>
   <div class="bg-grid-overlay" aria-hidden="true"></div>
 
   <!-- =========================================================================
-       1. CINEMATIC FULL-SCREEN OPENING ANIMATION
+       1. CINEMATIC OPENING INTRO ANIMATION
        ========================================================================= -->
   <div id="intro-screen" class="intro-screen" aria-label="Intro Animation Screen">
     <canvas id="intro-particles-canvas" class="intro-canvas"></canvas>
@@ -77,32 +77,30 @@
   </div>
 
   <!-- =========================================================================
-       2. TOP NAVIGATION BAR (Always Available - Zero-Knowledge Mode)
+       2. NAVIGATION BAR (EXACTLY 4 OPTIONS: Home, Password Checker, Generator, History)
        ========================================================================= -->
   <header class="navbar" id="main-navbar">
     <div class="container nav-container">
-      <a href="#dashboard" class="brand-logo" id="nav-brand-logo">
+      <a href="#home" class="brand-logo" id="nav-brand-logo">
         <div class="logo-icon-wrapper">
           <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
           </svg>
         </div>
         <div class="brand-text">
-          <span class="brand-name">Shield<span class="gradient-text">Pass</span></span>
-          <span class="brand-badge">PRO</span>
+          <span class="brand-name">Password <span class="gradient-text">Checker</span></span>
         </div>
       </a>
 
-      <!-- Desktop Nav Links -->
+      <!-- Desktop Nav Links: EXACTLY 4 OPTIONS -->
       <nav class="nav-links" id="nav-links">
-        <button type="button" class="nav-tab active" data-view="dashboard" id="nav-tab-dashboard">
+        <button type="button" class="nav-tab active" data-view="home" id="nav-tab-home">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
           <span>Home</span>
+          <span class="nav-indicator"></span>
         </button>
 
         <button type="button" class="nav-tab" data-view="checker" id="nav-tab-checker">
@@ -111,6 +109,7 @@
             <polyline points="9 12 11 14 15 10"></polyline>
           </svg>
           <span>Password Checker</span>
+          <span class="nav-indicator"></span>
         </button>
 
         <button type="button" class="nav-tab" data-view="generator" id="nav-tab-generator">
@@ -118,34 +117,26 @@
             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
             <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
           </svg>
-          <span>Generator</span>
+          <span>Password Generator</span>
+          <span class="nav-indicator"></span>
         </button>
 
-        <button type="button" class="nav-tab" data-view="audit" id="nav-tab-audit">
+        <button type="button" class="nav-tab" data-view="history" id="nav-tab-history">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
-          <span>Security Audit</span>
+          <span>History</span>
+          <span class="nav-indicator"></span>
         </button>
       </nav>
 
-      <!-- Nav Actions (Zero-Knowledge Indicator & Quick Action) -->
+      <!-- Nav Actions (Privacy Indicator & Mobile Toggle) -->
       <div class="nav-actions">
-        <div class="nav-status-badge">
+        <div class="nav-status-badge" title="100% In-Browser Computation">
           <span class="live-status-dot"></span>
-          <span>Zero-Knowledge Mode</span>
+          <span>Zero-Knowledge</span>
         </div>
-
-        <button type="button" class="btn btn-outline btn-sm btn-nav-to" data-view="generator" id="nav-quick-gen" title="Generate New Password">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="23 4 23 10 17 10"></polyline>
-            <polyline points="1 20 1 14 7 14"></polyline>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-          </svg>
-          <span>New Password</span>
-        </button>
 
         <!-- Mobile Menu Toggle Button -->
         <button type="button" class="mobile-menu-toggle" id="btn-mobile-toggle" aria-label="Toggle navigation menu">
@@ -156,860 +147,612 @@
 
     <!-- Mobile Navigation Drawer -->
     <div class="mobile-nav-drawer" id="mobile-nav-drawer">
-      <button type="button" class="mobile-nav-link active" data-view="dashboard">Home Dashboard</button>
-      <button type="button" class="mobile-nav-link" data-view="checker">Password Checker</button>
-      <button type="button" class="mobile-nav-link" data-view="generator">Password Generator</button>
-      <button type="button" class="mobile-nav-link" data-view="audit">Security Standards</button>
+      <button type="button" class="mobile-nav-link active" data-view="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+        <span>Home</span>
+      </button>
+      <button type="button" class="mobile-nav-link" data-view="checker">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <span>Password Checker</span>
+      </button>
+      <button type="button" class="mobile-nav-link" data-view="generator">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        <span>Password Generator</span>
+      </button>
+      <button type="button" class="mobile-nav-link" data-view="history">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span>History</span>
+      </button>
     </div>
   </header>
 
   <!-- =========================================================================
-       3. APPLICATION VIEWS (Dashboard, Checker, Generator, Security Audit)
+       3. MAIN APPLICATION VIEWPORT (Home, Checker, Generator, History)
        ========================================================================= -->
   <main id="app-viewport" class="app-viewport">
 
-    <!-- VIEW A: HOME DASHBOARD -->
-    <section class="view-panel active" id="view-dashboard">
+    <!-- =====================================================================
+         VIEW 1: HOME PAGE
+         ===================================================================== -->
+    <section class="view-panel active" id="view-home">
       <div class="container">
         
-        <!-- Welcome Hero Banner -->
-        <div class="dashboard-hero-banner">
-          <div class="hero-welcome-text">
-            <div class="user-greeting-pill">
+        <!-- Hero Section -->
+        <div class="home-hero-section">
+          <div class="home-hero-content">
+            <div class="hero-badge-pill">
               <span class="live-status-dot"></span>
-              <span id="dash-greeting-time">Good afternoon</span>
-              <span class="greeting-divider">•</span>
-              <span>Zero-Knowledge Privacy</span>
+              <span>Enterprise Cybersecurity Intelligence</span>
             </div>
-            <h1 class="dash-welcome-title">
-              Welcome to <span class="gradient-text">ShieldPass PRO</span>
+            <h1 class="home-main-title">
+              Password <span class="gradient-text">Strength Checker</span>
             </h1>
-            <p class="dash-welcome-sub">
-              Enterprise client-side password entropy evaluation, real-time brute force analysis, and cryptographically secure password generation with zero sign-in barriers.
+            <p class="home-subtitle">
+              Check, Create, and Manage Strong Passwords.
             </p>
-          </div>
-
-          <div class="hero-quick-actions">
-            <button type="button" class="btn btn-primary btn-icon-text" id="btn-quick-check">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                <polyline points="9 12 11 14 15 10"></polyline>
-              </svg>
-              <span>Analyze Password</span>
-            </button>
-            <button type="button" class="btn btn-secondary btn-icon-text" id="btn-quick-gen">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="23 4 23 10 17 10"></polyline>
-                <polyline points="1 20 1 14 7 14"></polyline>
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-              </svg>
-              <span>Generate Password</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Real Calculated Session Statistics Cards -->
-        <div class="stats-cards-grid">
-          <div class="stat-metric-card">
-            <div class="stat-icon-wrapper stat-purple">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-              </svg>
-            </div>
-            <div class="stat-metric-info">
-              <span class="stat-metric-label">Passwords Analyzed</span>
-              <span class="stat-metric-val" id="stat-passwords-analyzed">0</span>
-              <span class="stat-metric-sub">This active session</span>
-            </div>
-          </div>
-
-          <div class="stat-metric-card">
-            <div class="stat-icon-wrapper stat-cyan">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-              </svg>
-            </div>
-            <div class="stat-metric-info">
-              <span class="stat-metric-label">Passwords Generated</span>
-              <span class="stat-metric-val" id="stat-passwords-generated">0</span>
-              <span class="stat-metric-sub">Cryptographically secure (CSPRNG)</span>
-            </div>
-          </div>
-
-          <div class="stat-metric-card">
-            <div class="stat-icon-wrapper stat-emerald">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-                <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                <line x1="15" y1="9" x2="15.01" y2="9"></line>
-              </svg>
-            </div>
-            <div class="stat-metric-info">
-              <span class="stat-metric-label">Strength Distribution</span>
-              <div class="stat-categories-mini" id="stat-categories-mini">
-                <span class="cat-pill vweak" title="Very Weak">VW: <strong id="cat-cnt-vweak">0</strong></span>
-                <span class="cat-pill weak" title="Weak">W: <strong id="cat-cnt-weak">0</strong></span>
-                <span class="cat-pill med" title="Medium">M: <strong id="cat-cnt-med">0</strong></span>
-                <span class="cat-pill strong" title="Strong">S: <strong id="cat-cnt-strong">0</strong></span>
-                <span class="cat-pill vstrong" title="Very Strong">VS: <strong id="cat-cnt-vstrong">0</strong></span>
-              </div>
-              <span class="stat-metric-sub">Real classification breakdown</span>
-            </div>
-          </div>
-
-          <div class="stat-metric-card">
-            <div class="stat-icon-wrapper stat-blue">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                <line x1="8" y1="21" x2="16" y2="21"></line>
-                <line x1="12" y1="17" x2="12" y2="21"></line>
-              </svg>
-            </div>
-            <div class="stat-metric-info">
-              <span class="stat-metric-label">Active Session Time</span>
-              <span class="stat-metric-val font-mono" id="stat-session-duration">00:00</span>
-              <span class="stat-metric-sub">Protected by PBKDF2</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Dashboard Feature Previews (Checker, Generator, Profile, Activity) -->
-        <div class="dash-previews-grid">
-          
-          <!-- Card 1: Password Strength Checker Quick Preview -->
-          <div class="dashboard-card preview-card">
-            <div class="card-header">
-              <div class="card-title-group">
-                <div class="card-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h2 class="card-title">Password Strength Checker</h2>
-                  <p class="card-desc">Evaluate credentials against 5 cryptographic tiers</p>
-                </div>
-              </div>
-              <button type="button" class="btn btn-outline btn-sm btn-nav-to" data-view="checker">
-                Open Full Tool →
-              </button>
-            </div>
-
-            <p class="preview-text">
-              Real-time heuristic evaluation measuring Shannon entropy, character diversity (A-Z, a-z, 0-9, symbols), and resistance to common dictionary words.
+            <p class="home-description">
+              Safeguard your digital identity with military-grade password entropy analysis, cryptographically unbiased CSPRNG generation, and local privacy-preserving auditing.
             </p>
 
-            <div class="preview-mini-checker">
-              <div class="input-glow-frame mini-frame">
-                <input type="text" id="dash-quick-input" placeholder="Type a sample password to test..." spellcheck="false" autocomplete="off">
-              </div>
-              <div class="preview-meter-bar">
-                <div class="meter-segment" id="dash-meter-seg-1"></div>
-                <div class="meter-segment" id="dash-meter-seg-2"></div>
-                <div class="meter-segment" id="dash-meter-seg-3"></div>
-                <div class="meter-segment" id="dash-meter-seg-4"></div>
-                <div class="meter-segment" id="dash-meter-seg-5"></div>
-              </div>
-              <div class="preview-results-row">
-                <span class="preview-label" id="dash-quick-label">Awaiting Input</span>
-                <button type="button" class="btn-link" id="btn-jump-checker">View Complete 7-Point Checklist →</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 2: Password Generator Quick Preview -->
-          <div class="dashboard-card preview-card">
-            <div class="card-header">
-              <div class="card-title-group">
-                <div class="card-icon card-icon-cyan">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h2 class="card-title">CSPRNG Password Generator</h2>
-                  <p class="card-desc">Create 8 to 64-character high-entropy credentials</p>
-                </div>
-              </div>
-              <button type="button" class="btn btn-outline btn-sm btn-nav-to" data-view="generator">
-                Customizer →
-              </button>
-            </div>
-
-            <p class="preview-text">
-              Harnesses the browser's native <code>crypto.getRandomValues()</code> engine with unbiased rejection sampling.
-            </p>
-
-            <div class="preview-gen-box">
-              <div class="preview-gen-display" id="dash-quick-gen-display">
-                k9#W$vP2@mQ8!zX1
-              </div>
-              <div class="preview-gen-actions">
-                <button type="button" class="btn btn-secondary btn-sm" id="dash-quick-copy">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                  </svg>
-                  <span>Copy</span>
-                </button>
-                <button type="button" class="btn btn-primary btn-sm" id="dash-quick-regen">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="23 4 23 10 17 10"></polyline>
-                    <polyline points="1 20 1 14 7 14"></polyline>
-                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                  </svg>
-                  <span>Regenerate</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 3: Recent Real Activity Log -->
-          <div class="dashboard-card preview-card">
-            <div class="card-header">
-              <div class="card-title-group">
-                <div class="card-icon card-icon-amber">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                  </svg>
-                </div>
-                <div>
-                  <h2 class="card-title">Session Security Activity</h2>
-                  <p class="card-desc">Audit trail of actions during current session</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="activity-log-container">
-              <ul class="activity-log-list" id="activity-log-list">
-                <li class="activity-log-item">
-                  <span class="activity-bullet blue"></span>
-                  <div class="activity-body">
-                    <span class="activity-title">Session authenticated successfully</span>
-                    <span class="activity-time">Just now</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Card 4: Client-Side Security & Privacy Vault -->
-          <div class="dashboard-card preview-card">
-            <div class="card-header">
-              <div class="card-title-group">
-                <div class="card-icon card-icon-purple">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h2 class="card-title">Client Security Vault</h2>
-                  <p class="card-desc">Zero-knowledge local architecture</p>
-                </div>
-              </div>
-              <button type="button" class="btn btn-outline btn-sm btn-nav-to" data-view="audit">
-                View Audit Standards →
-              </button>
-            </div>
-
-            <div class="profile-preview-body">
-              <div class="profile-preview-row">
-                <span class="label">Access Mode:</span>
-                <strong class="val text-emerald">Anonymous (No Sign-in Required)</strong>
-              </div>
-              <div class="profile-preview-row">
-                <span class="label">Processing:</span>
-                <strong class="val text-cyan">100% In-Browser Execution</strong>
-              </div>
-              <div class="profile-preview-row">
-                <span class="label">Network Activity:</span>
-                <span class="badge-pill-sm">0 Server Transmissions</span>
-              </div>
-              <div class="profile-preview-row">
-                <span class="label">Zero-Knowledge Vault:</span>
-                <span class="status-verified">✓ Verified Active</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Security Best Practices Carousel / Grid -->
-        <div class="dashboard-tips-section">
-          <div class="section-heading text-center">
-            <div class="badge-pill">Cyber Hygiene</div>
-            <h2 class="section-title">Password Security <span class="gradient-text">Best Practices</span></h2>
-            <p class="section-subtitle">Core principles to safeguard digital identity and prevent credential theft.</p>
-          </div>
-
-          <div class="tips-grid">
-            <div class="tip-card">
-              <div class="tip-icon-wrapper">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="8.5" cy="7" r="4"></circle>
-                  <line x1="20" y1="8" x2="20" y2="14"></line>
-                  <line x1="23" y1="11" x2="17" y2="11"></line>
-                </svg>
-              </div>
-              <h3 class="tip-title">Never Reuse Passwords</h3>
-              <p class="tip-desc">Credential stuffing tools match breached passwords from one site across thousands of others. Keep every account 100% unique.</p>
-            </div>
-
-            <div class="tip-card">
-              <div class="tip-icon-wrapper">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-              </div>
-              <h3 class="tip-title">Use a Password Manager</h3>
-              <p class="tip-desc">Humans cannot remember dozens of 20-character random strings. Audited password managers generate and auto-fill them securely.</p>
-            </div>
-
-            <div class="tip-card">
-              <div class="tip-icon-wrapper">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-                  <line x1="12" y1="18" x2="12.01" y2="18"></line>
-                </svg>
-              </div>
-              <h3 class="tip-title">Activate Two-Factor (2FA)</h3>
-              <p class="tip-desc">Even if your password is stolen, hardware keys or authenticator apps stop attackers from completing unauthorized sign-ins.</p>
-            </div>
-
-            <div class="tip-card">
-              <div class="tip-icon-wrapper">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-              </div>
-              <h3 class="tip-title">Prefer Length & Passphrases</h3>
-              <p class="tip-desc">A 4-word random passphrase (e.g. <em>correct-horse-battery-staple</em>) delivers superior entropy compared to short complex strings.</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- VIEW B: DEDICATED PASSWORD STRENGTH CHECKER PAGE -->
-    <section class="view-panel" id="view-checker">
-      <div class="container">
-        
-        <div class="section-heading text-center">
-          <div class="badge-pill">Cryptographic Heuristics</div>
-          <h2 class="section-title">Password Strength <span class="gradient-text">Checker</span></h2>
-          <p class="section-subtitle">
-            Instant real-time analysis measuring entropy, dictionary resistance, character variety, and sequential patterns.
-          </p>
-        </div>
-
-        <div class="dashboard-grid">
-          
-          <!-- Left Column: Input, Strength Meter & Crack Time -->
-          <div class="dashboard-card analyzer-card">
-            <div class="card-header">
-              <div class="card-title-group">
-                <div class="card-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="card-title">Live Password Analyzer</h3>
-                  <p class="card-desc">Type or paste any password to inspect vulnerability</p>
-                </div>
-              </div>
-              
-              <div class="header-actions">
-                <button type="button" id="btn-reset" class="btn-icon" title="Reset Field" aria-label="Reset password field">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-                    <path d="M21 3v5h-5"></path>
-                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-                    <path d="M8 16H3v5"></path>
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <!-- Password Input Container -->
-            <div class="password-input-wrapper">
-              <label for="password-input" class="sr-only">Password to analyze</label>
-              <div class="input-glow-frame" id="input-frame">
-                <div class="input-icon-prefix">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M12 8v4"></path>
-                    <path d="M12 16h.01"></path>
-                  </svg>
-                </div>
-                <input 
-                  type="password" 
-                  id="password-input" 
-                  class="password-input" 
-                  placeholder="Enter your password here..." 
-                  autocomplete="off" 
-                  spellcheck="false"
-                >
-                <div class="input-action-buttons">
-                  <button type="button" id="btn-clear" class="input-action-btn" title="Clear input" aria-label="Clear password" style="display: none;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                  </button>
-                  <button type="button" id="btn-toggle-visibility" class="input-action-btn" title="Show/Hide password" aria-label="Toggle password visibility">
-                    <svg id="icon-eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                      <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                    <svg id="icon-eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                      <line x1="1" y1="1" x2="23" y2="23"></line>
-                    </svg>
-                  </button>
-                  <button type="button" id="btn-copy-input" class="input-action-btn" title="Copy password" aria-label="Copy password to clipboard">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              
-              <!-- Input Meta Info Bar -->
-              <div class="input-meta-bar">
-                <span class="length-counter" id="length-counter">
-                  Length: <strong id="char-count">0</strong> characters
-                </span>
-                <span class="entropy-badge" id="entropy-badge" title="Information entropy measure">
-                  Entropy: <strong id="entropy-value">0 bits</strong>
-                </span>
-              </div>
-            </div>
-
-            <!-- Strength Meter Visual -->
-            <div class="strength-meter-container" id="strength-meter-section">
-              <div class="strength-header">
-                <span class="strength-heading">Security Level</span>
-                <div class="strength-status">
-                  <span class="strength-score-percent" id="strength-score-percent">0%</span>
-                  <span class="strength-badge-tag strength-none" id="strength-level-tag">Awaiting Input</span>
-                </div>
-              </div>
-
-              <!-- Segmented Progress Bar -->
-              <div class="meter-bar-track">
-                <div class="meter-segment" data-segment="1"></div>
-                <div class="meter-segment" data-segment="2"></div>
-                <div class="meter-segment" data-segment="3"></div>
-                <div class="meter-segment" data-segment="4"></div>
-                <div class="meter-segment" data-segment="5"></div>
-              </div>
-
-              <!-- Time to Crack & Guess Resistance Card -->
-              <div class="crack-time-card" id="crack-time-card">
-                <div class="crack-time-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                  </svg>
-                </div>
-                <div class="crack-time-info">
-                  <span class="crack-time-label">Estimated Time to Crack (Brute Force):</span>
-                  <span class="crack-time-value" id="crack-time-value">Instant (0 seconds)</span>
-                  <p class="crack-time-sub" id="crack-time-sub">Based on a GPU cluster computing 10 billion guesses/sec</p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Right Column: Security Checklist & Suggestions -->
-          <div class="dashboard-sidebar">
-            
-            <!-- Security Checklist Card -->
-            <div class="dashboard-card checklist-card">
-              <div class="card-header">
-                <div class="card-title-group">
-                  <div class="card-icon card-icon-cyan">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M9 11l3 3L22 4"></path>
-                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 class="card-title">Security Checklist</h3>
-                    <p class="card-desc">Essential criteria for resilient credentials</p>
-                  </div>
-                </div>
-                <span class="checklist-score-pill" id="checklist-progress">0/7 Passed</span>
-              </div>
-
-              <ul class="checklist-items" id="security-checklist">
-                <li class="check-item" id="check-len-8">
-                  <span class="check-icon-box">
-                    <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </span>
-                  <span class="check-text">Contains at least <strong>8 characters</strong></span>
-                </li>
-
-                <li class="check-item" id="check-len-12">
-                  <span class="check-icon-box">
-                    <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </span>
-                  <span class="check-text">Contains at least <strong>12 characters</strong> <span class="badge-recommended">Recommended</span></span>
-                </li>
-
-                <li class="check-item" id="check-upper">
-                  <span class="check-icon-box">
-                    <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </span>
-                  <span class="check-text">Includes <strong>uppercase letters</strong> (A–Z)</span>
-                </li>
-
-                <li class="check-item" id="check-lower">
-                  <span class="check-icon-box">
-                    <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </span>
-                  <span class="check-text">Includes <strong>lowercase letters</strong> (a–z)</span>
-                </li>
-
-                <li class="check-item" id="check-number">
-                  <span class="check-icon-box">
-                    <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </span>
-                  <span class="check-text">Includes <strong>numbers</strong> (0–9)</span>
-                </li>
-
-                <li class="check-item" id="check-symbol">
-                  <span class="check-icon-box">
-                    <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </span>
-                  <span class="check-text">Includes <strong>special characters</strong> (!@#$...)</span>
-                </li>
-
-                <li class="check-item" id="check-patterns">
-                  <span class="check-icon-box">
-                    <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </span>
-                  <span class="check-text">Avoids <strong>common words & predictable sequences</strong></span>
-                </li>
-              </ul>
-            </div>
-
-            <!-- Password Improvement Suggestions Card -->
-            <div class="dashboard-card suggestions-card">
-              <div class="card-header">
-                <div class="card-title-group">
-                  <div class="card-icon card-icon-amber">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M12 2v4"></path>
-                      <path d="M12 18v4"></path>
-                      <path d="M4.93 4.93l2.83 2.83"></path>
-                      <path d="M16.24 16.24l2.83 2.83"></path>
-                      <path d="M2 12h4"></path>
-                      <path d="M18 12h4"></path>
-                      <path d="M4.93 19.07l2.83-2.83"></path>
-                      <path d="M16.24 7.76l2.83-2.83"></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 class="card-title">Recommendations</h3>
-                    <p class="card-desc">Actionable steps to enhance strength</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="suggestions-container" id="suggestions-container">
-                <div class="suggestion-empty-state">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="16" x2="12" y2="12"></line>
-                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                  </svg>
-                  <p>Type a password above to receive real-time, personalized suggestions to maximize security.</p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- VIEW C: DEDICATED PASSWORD GENERATOR PAGE (8-64 CHARACTERS) -->
-    <section class="view-panel" id="view-generator">
-      <div class="container">
-        
-        <div class="section-heading text-center">
-          <div class="badge-pill">Cryptographically Secure Engine</div>
-          <h2 class="section-title">Password <span class="gradient-text">Generator</span></h2>
-          <p class="section-subtitle">
-            Generate high-entropy, cryptographically random credentials (8 to 64 chars) utilizing the browser's native <code>crypto.getRandomValues()</code> API.
-          </p>
-        </div>
-
-        <div class="generator-card">
-          <!-- Password Display Screen -->
-          <div class="generated-display-box">
-            <span class="generated-password-text" id="generated-password">Generating...</span>
-            <div class="generated-actions">
-              <button type="button" id="btn-toggle-gen-view" class="btn btn-secondary btn-icon-text" title="Show/Hide generated password" aria-label="Toggle generated password visibility">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                <span id="gen-view-label">Hide</span>
-              </button>
-              <button type="button" id="btn-copy-generated" class="btn btn-secondary btn-icon-text" title="Copy to clipboard" aria-label="Copy generated password">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                <span>Copy</span>
-              </button>
-              <button type="button" id="btn-test-in-checker" class="btn btn-primary btn-icon-text" title="Send directly to the checker" aria-label="Test generated password in checker">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                </svg>
-                <span>Test in Checker</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Generator Controls -->
-          <div class="generator-controls">
-            <!-- Length Slider (8 to 64 chars) -->
-            <div class="control-group">
-              <div class="control-label-row">
-                <label for="gen-length" class="control-label">Password Length</label>
-                <span class="length-display-pill" id="gen-length-val">16 characters</span>
-              </div>
-              <div class="range-slider-wrapper">
-                <input 
-                  type="range" 
-                  id="gen-length" 
-                  min="8" 
-                  max="64" 
-                  value="16" 
-                  class="custom-range"
-                  aria-label="Generated password length"
-                >
-                <div class="range-bounds">
-                  <span>8 chars</span>
-                  <span>16 chars</span>
-                  <span>32 chars</span>
-                  <span>48 chars</span>
-                  <span>64 chars</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Character Set Options -->
-            <div class="generator-options-grid">
-              <label class="toggle-option-card">
-                <input type="checkbox" id="gen-upper" checked>
-                <div class="toggle-box"></div>
-                <div class="option-info">
-                  <span class="option-title">Uppercase Letters</span>
-                  <span class="option-sample">A, B, C, D...</span>
-                </div>
-              </label>
-
-              <label class="toggle-option-card">
-                <input type="checkbox" id="gen-lower" checked>
-                <div class="toggle-box"></div>
-                <div class="option-info">
-                  <span class="option-title">Lowercase Letters</span>
-                  <span class="option-sample">a, b, c, d...</span>
-                </div>
-              </label>
-
-              <label class="toggle-option-card">
-                <input type="checkbox" id="gen-numbers" checked>
-                <div class="toggle-box"></div>
-                <div class="option-info">
-                  <span class="option-title">Numbers</span>
-                  <span class="option-sample">0, 1, 2, 3...</span>
-                </div>
-              </label>
-
-              <label class="toggle-option-card">
-                <input type="checkbox" id="gen-symbols" checked>
-                <div class="toggle-box"></div>
-                <div class="option-info">
-                  <span class="option-title">Special Characters</span>
-                  <span class="option-sample">! @ # $ % & *</span>
-                </div>
-              </label>
-
-              <label class="toggle-option-card full-width">
-                <input type="checkbox" id="gen-avoid-ambiguous">
-                <div class="toggle-box"></div>
-                <div class="option-info">
-                  <span class="option-title">Exclude Ambiguous Characters</span>
-                  <span class="option-sample">Avoid confusing characters like: 1, l, I, 0, O</span>
-                </div>
-              </label>
-            </div>
-
-            <!-- Generate Button -->
-            <div class="generator-footer-action">
-              <button type="button" id="btn-generate-password" class="btn btn-gradient btn-lg w-100">
-                <svg id="icon-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="23 4 23 10 17 10"></polyline>
-                  <polyline points="1 20 1 14 7 14"></polyline>
-                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                </svg>
-                <span>Generate New Secure Password</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- VIEW D: DEDICATED SECURITY & PRIVACY STANDARDS PAGE -->
-    <section class="view-panel" id="view-audit">
-      <div class="container">
-        
-        <div class="section-heading text-center">
-          <div class="badge-pill">Client-Side Architecture</div>
-          <h2 class="section-title">Security & <span class="gradient-text">Privacy Standards</span></h2>
-          <p class="section-subtitle">ShieldPass PRO operates entirely inside your browser. No passwords, credentials, or personal identifiers ever touch an external server.</p>
-        </div>
-
-        <div class="profile-page-grid">
-          
-          <!-- System Security Architecture Card -->
-          <div class="dashboard-card profile-main-card">
-            <div class="profile-hero-row">
-              <div class="profile-avatar-large audit-avatar-shield">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 38px; height: 38px;">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                </svg>
-              </div>
-              <div class="profile-meta-info">
-                <div class="profile-badge-row">
-                  <span class="badge-user-role">Zero-Knowledge Certified</span>
-                  <span class="badge-account-active">100% In-Browser</span>
-                </div>
-                <h3 class="profile-full-name">Client Privacy Architecture</h3>
-                <span class="profile-handle font-mono">Status: Private & Offline-Capable</span>
-                <span class="profile-email-text">Zero server-side transmission, tracking, or persistence</span>
-              </div>
-            </div>
-
-            <div class="profile-details-grid">
-              <div class="prof-detail-box">
-                <span class="detail-label">Architecture Mode</span>
-                <span class="detail-value text-emerald">Zero-Knowledge</span>
-              </div>
-              <div class="prof-detail-box">
-                <span class="detail-label">Entropy Standard</span>
-                <span class="detail-value font-mono">Shannon Information (Bits)</span>
-              </div>
-              <div class="prof-detail-box">
-                <span class="detail-label">CSPRNG Engine</span>
-                <span class="detail-value text-cyan">Web Cryptography API</span>
-              </div>
-              <div class="prof-detail-box">
-                <span class="detail-label">Active Session Actions</span>
-                <span class="detail-value" id="prof-total-actions">0 operations</span>
-              </div>
-            </div>
-
-            <div class="profile-actions-toolbar">
-              <button type="button" class="btn btn-primary btn-icon-text btn-nav-to" data-view="checker">
+            <div class="home-cta-row">
+              <button type="button" class="btn btn-primary btn-lg btn-icon-text" id="btn-hero-check" data-navigate="checker">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                   <polyline points="9 12 11 14 15 10"></polyline>
                 </svg>
-                <span>Analyze a Password</span>
+                <span>Check Password</span>
               </button>
-
-              <button type="button" class="btn btn-secondary btn-icon-text btn-nav-to" data-view="generator">
+              <button type="button" class="btn btn-secondary btn-lg btn-icon-text" id="btn-hero-gen" data-navigate="generator">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="23 4 23 10 17 10"></polyline>
-                  <polyline points="1 20 1 14 7 14"></polyline>
-                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
                 </svg>
                 <span>Generate Password</span>
               </button>
             </div>
           </div>
 
-          <!-- Security & Privacy Audit Card -->
-          <div class="dashboard-card profile-audit-card">
-            <div class="card-header">
-              <div class="card-title-group">
-                <div class="card-icon card-icon-cyan">
+          <!-- Animated Shield Illustration Graphic -->
+          <div class="home-hero-graphic">
+            <div class="hero-shield-card">
+              <div class="shield-graphic-pulse"></div>
+              <div class="shield-graphic-pulse delay-2"></div>
+              <div class="shield-graphic-core">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="svg-big-shield">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <div class="shield-scan-line"></div>
+                <div class="shield-lock-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="9 11 12 14 22 4"></polyline>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    <rect x="7" y="11" width="10" height="9" rx="2" ry="2"></rect>
+                    <path d="M9 11V7a3 3 0 0 1 6 0v4"></path>
                   </svg>
                 </div>
-                <div>
-                  <h3 class="card-title">Security & Privacy Audit</h3>
-                  <p class="card-desc">Client credential safeguards & NIST guidelines</p>
+              </div>
+              <div class="shield-floating-chip chip-1">
+                <span class="chip-dot"></span>
+                <span>Shannon Entropy</span>
+              </div>
+              <div class="shield-floating-chip chip-2">
+                <span class="chip-dot cyan"></span>
+                <span>CSPRNG 256-bit</span>
+              </div>
+              <div class="shield-floating-chip chip-3">
+                <span class="chip-dot emerald"></span>
+                <span>Zero Server Storage</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Three Attractive Feature Cards -->
+        <div class="home-features-section">
+          <div class="section-header-centered">
+            <div class="badge-pill">Core Capabilities</div>
+            <h2 class="section-heading-title">Next-Generation <span class="gradient-text">Password Protection</span></h2>
+            <p class="section-heading-sub">Everything you need to evaluate, synthesize, and monitor robust credentials.</p>
+          </div>
+
+          <div class="three-features-grid">
+            
+            <!-- Feature Card 1: Password Checker -->
+            <div class="feature-card">
+              <div class="feature-card-glow"></div>
+              <div class="feature-icon-wrapper icon-purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <polyline points="9 12 11 14 15 10"></polyline>
+                </svg>
+              </div>
+              <h3 class="feature-title">Password Checker</h3>
+              <p class="feature-description">
+                Check password strength instantly and receive security suggestions.
+              </p>
+              <div class="feature-highlights">
+                <span>✓ 5-Tier Strength Classification</span>
+                <span>✓ Shannon Entropy & GPU Crack Estimator</span>
+                <span>✓ Dictionary & Pattern Resistance</span>
+              </div>
+              <button type="button" class="btn btn-outline btn-sm feature-btn" data-navigate="checker">
+                <span>Check Password</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </button>
+            </div>
+
+            <!-- Feature Card 2: Password Generator -->
+            <div class="feature-card">
+              <div class="feature-card-glow cyan"></div>
+              <div class="feature-icon-wrapper icon-cyan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+              </div>
+              <h3 class="feature-title">Password Generator</h3>
+              <p class="feature-description">
+                Generate strong, random passwords using customizable options.
+              </p>
+              <div class="feature-highlights">
+                <span>✓ 8 to 64 Custom Length Range</span>
+                <span>✓ Web Cryptography CSPRNG Engine</span>
+                <span>✓ Exclude Ambiguous Glyph Filter</span>
+              </div>
+              <button type="button" class="btn btn-outline btn-sm feature-btn" data-navigate="generator">
+                <span>Generate Password</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </button>
+            </div>
+
+            <!-- Feature Card 3: Password History -->
+            <div class="feature-card">
+              <div class="feature-card-glow emerald"></div>
+              <div class="feature-icon-wrapper icon-emerald">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <h3 class="feature-title">Password History</h3>
+              <p class="feature-description">
+                View previous analysis results and generated password records according to the privacy rules.
+              </p>
+              <div class="feature-highlights">
+                <span>✓ 100% Zero-Knowledge Metadata</span>
+                <span>✓ Actual Passwords NEVER Stored</span>
+                <span>✓ On-Device Local Audit Log</span>
+              </div>
+              <button type="button" class="btn btn-outline btn-sm feature-btn" data-navigate="history">
+                <span>View History</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         VIEW 2: PASSWORD CHECKER PAGE
+         ===================================================================== -->
+    <section class="view-panel" id="view-checker">
+      <div class="container">
+        
+        <div class="section-header-centered">
+          <div class="badge-pill">Real-Time Analysis</div>
+          <h2 class="section-heading-title">Password <span class="gradient-text">Strength Analyzer</span></h2>
+          <p class="section-heading-sub">Test credentials against Shannon entropy, dictionary lookups, and GPU cluster brute-force metrics.</p>
+        </div>
+
+        <div class="checker-layout-grid">
+          
+          <!-- Left Column: Input Field & Visual Strength Meter -->
+          <div class="checker-main-card">
+            
+            <div class="input-card-header">
+              <label for="password-input" class="input-title">Enter Password to Analyze</label>
+              <span class="privacy-note-pill">🔒 Processed 100% Locally in Browser</span>
+            </div>
+
+            <!-- Interactive Password Input Box -->
+            <div class="password-input-frame" id="input-frame">
+              <input 
+                type="password" 
+                id="password-input" 
+                class="main-password-input" 
+                placeholder="Type or paste any password to evaluate..."
+                autocomplete="off"
+                spellcheck="false"
+              >
+              
+              <div class="input-actions-group">
+                <button type="button" class="input-action-btn" id="btn-toggle-visibility" title="Show or hide password" aria-label="Toggle password visibility">
+                  <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                </button>
+
+                <button type="button" class="input-action-btn" id="btn-clear" title="Clear password field" aria-label="Clear input">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Character Length & Entropy Metric Bar -->
+            <div class="input-meta-bar">
+              <div class="meta-item">
+                <span class="meta-label">Length:</span>
+                <strong class="meta-value" id="char-count">0 characters</strong>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Shannon Entropy:</span>
+                <strong class="meta-value font-mono" id="entropy-value">0 bits</strong>
+              </div>
+            </div>
+
+            <!-- Animated Strength Meter Section -->
+            <div class="strength-meter-box" id="strength-meter-section">
+              <div class="meter-header">
+                <span class="meter-title">Evaluated Strength</span>
+                <div class="meter-score-group">
+                  <span class="strength-level-tag" id="strength-level-tag">Awaiting Input</span>
+                  <span class="strength-score-percent" id="strength-score-percent">0%</span>
+                </div>
+              </div>
+
+              <!-- 5-Segment Animated Progress Bar -->
+              <div class="meter-track">
+                <div class="meter-segment" id="meter-seg-1"></div>
+                <div class="meter-segment" id="meter-seg-2"></div>
+                <div class="meter-segment" id="meter-seg-3"></div>
+                <div class="meter-segment" id="meter-seg-4"></div>
+                <div class="meter-segment" id="meter-seg-5"></div>
+              </div>
+
+              <!-- Estimated Crack Time Indicator (10 Billion guesses/sec GPU cluster) -->
+              <div class="crack-time-card">
+                <div class="crack-time-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                  </svg>
+                </div>
+                <div class="crack-time-info">
+                  <span class="crack-time-label">Estimated GPU Cluster Crack Time:</span>
+                  <strong class="crack-time-val font-mono" id="crack-time-value">Instant (0 seconds)</strong>
+                  <span class="crack-time-sub" id="crack-time-sub">Enter a password to evaluate brute-force resistance</span>
                 </div>
               </div>
             </div>
 
-            <div class="audit-items-list">
-              <div class="audit-item">
-                <div class="audit-check">✓</div>
-                <div>
-                  <strong>Zero-Knowledge Client Computation</strong>
-                  <p>All password strength calculations, entropy measurements, and pattern heuristics execute strictly inside your local browser tab.</p>
-                </div>
-              </div>
+            <!-- Suggestions Container -->
+            <div class="suggestions-box">
+              <h4 class="suggestions-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>Personalized Improvement Suggestions</span>
+              </h4>
+              <ul class="suggestions-list" id="suggestions-container">
+                <li class="suggestion-item info">Enter at least 8 characters to begin cryptographic evaluation.</li>
+              </ul>
+            </div>
 
-              <div class="audit-item">
-                <div class="audit-check">✓</div>
-                <div>
-                  <strong>No Plaintext Password Storage</strong>
-                  <p>Analyzed credentials exist strictly in volatile RAM memory and are automatically cleared on tab close or manual reset.</p>
-                </div>
-              </div>
+          </div>
 
-              <div class="audit-item">
-                <div class="audit-check">✓</div>
-                <div>
-                  <strong>Web Cryptography CSPRNG</strong>
-                  <p>Random characters are sourced exclusively from the operating system's entropy pool via native <code>crypto.getRandomValues()</code> with zero modulo bias.</p>
-                </div>
-              </div>
+          <!-- Right Column: Interactive Security Checklist -->
+          <div class="checklist-card">
+            <div class="checklist-header">
+              <h3 class="checklist-title">Security Checklist</h3>
+              <span class="checklist-progress-badge" id="checklist-progress">0 of 7 Passed</span>
+            </div>
+            <p class="checklist-desc">Requirements aligned with NIST SP 800-63B guidelines.</p>
 
-              <div class="audit-item">
-                <div class="audit-check">✓</div>
-                <div>
-                  <strong>Heuristic Attack Resistance</strong>
-                  <p>Evaluates common dictionary passwords, sequential characters, and keyboard patterns under modern 10-billion guesses/sec GPU cluster attack models.</p>
+            <ul class="checklist-items">
+              <li class="check-row" id="check-len-8">
+                <span class="check-icon">✕</span>
+                <div class="check-text">
+                  <strong>At least 8 characters</strong>
+                  <span>Basic baseline defense against automated credential sprays</span>
                 </div>
+              </li>
+              <li class="check-row" id="check-len-12">
+                <span class="check-icon">✕</span>
+                <div class="check-text">
+                  <strong>12+ characters recommended</strong>
+                  <span>Exponentially elevates brute-force search space complexity</span>
+                </div>
+              </li>
+              <li class="check-row" id="check-upper">
+                <span class="check-icon">✕</span>
+                <div class="check-text">
+                  <strong>Uppercase letters (A–Z)</strong>
+                  <span>Expands alphabet pool by 26 characters</span>
+                </div>
+              </li>
+              <li class="check-row" id="check-lower">
+                <span class="check-icon">✕</span>
+                <div class="check-text">
+                  <strong>Lowercase letters (a–z)</strong>
+                  <span>Expands alphabet pool by 26 characters</span>
+                </div>
+              </li>
+              <li class="check-row" id="check-number">
+                <span class="check-icon">✕</span>
+                <div class="check-text">
+                  <strong>Numeric digits (0–9)</strong>
+                  <span>Diversifies character set against alphabetic dictionary attacks</span>
+                </div>
+              </li>
+              <li class="check-row" id="check-symbol">
+                <span class="check-icon">✕</span>
+                <div class="check-text">
+                  <strong>Special symbols (!@#$%^&*)</strong>
+                  <span>Adds 33+ high-entropy glyphs to combinations</span>
+                </div>
+              </li>
+              <li class="check-row" id="check-patterns">
+                <span class="check-icon">✕</span>
+                <div class="check-text">
+                  <strong>Avoids common patterns</strong>
+                  <span>Free of dictionary breached words, qwerty sequences & repeated chars</span>
+                </div>
+              </li>
+            </ul>
+
+            <div class="checklist-footer-hint">
+              <span>Need an unbreakable password?</span>
+              <button type="button" class="btn-text-action" data-navigate="generator">Generate One Now →</button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         VIEW 3: PASSWORD GENERATOR PAGE
+         ===================================================================== -->
+    <section class="view-panel" id="view-generator">
+      <div class="container">
+        
+        <div class="section-header-centered">
+          <div class="badge-pill">Web Cryptography API</div>
+          <h2 class="section-heading-title">CSPRNG <span class="gradient-text">Password Generator</span></h2>
+          <p class="section-heading-sub">Generate cryptographically unbiased passwords using your operating system's native entropy pool.</p>
+        </div>
+
+        <div class="generator-card">
+          
+          <!-- Generated Password Display Box -->
+          <div class="generator-display-box">
+            <div class="display-label-row">
+              <span class="display-title">Generated Password</span>
+              <span class="display-bits font-mono" id="gen-bits-badge">Entropy: ~128 bits</span>
+            </div>
+
+            <div class="display-main-row">
+              <span class="generated-password-text font-mono" id="generated-password">Generating...</span>
+              
+              <div class="display-actions">
+                <button type="button" class="btn-icon-action" id="btn-toggle-gen-view" title="Mask/Unmask Password">
+                  <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                </button>
+
+                <button type="button" class="btn-icon-action btn-copy-glow" id="btn-copy-generated" title="Copy to clipboard">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span>Copy</span>
+                </button>
+
+                <button type="button" class="btn-icon-action" id="btn-regen-icon" title="Regenerate Password">
+                  <svg id="icon-regen-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
 
+          <!-- Controls & Character Pools -->
+          <div class="generator-controls">
+            
+            <!-- Length Slider (8 to 64 chars) -->
+            <div class="slider-group">
+              <div class="slider-header">
+                <label for="gen-length" class="control-label">Password Length</label>
+                <div class="slider-val-box">
+                  <span class="slider-val-number font-mono" id="gen-length-val">20</span>
+                  <span class="slider-val-unit">chars</span>
+                </div>
+              </div>
+              <input 
+                type="range" 
+                id="gen-length" 
+                min="8" 
+                max="64" 
+                value="20" 
+                class="custom-range-slider"
+              >
+              <div class="slider-scale">
+                <span>8 (Min)</span>
+                <span>16</span>
+                <span>24</span>
+                <span>32</span>
+                <span>48</span>
+                <span>64 (Max)</span>
+              </div>
+            </div>
+
+            <!-- Character Pool Toggles -->
+            <div class="options-grid">
+              
+              <label class="toggle-card">
+                <input type="checkbox" id="gen-upper" checked>
+                <div class="toggle-checkbox-indicator"></div>
+                <div class="toggle-info">
+                  <span class="toggle-title">Uppercase Letters</span>
+                  <span class="toggle-sub">A B C D E F G ...</span>
+                </div>
+              </label>
+
+              <label class="toggle-card">
+                <input type="checkbox" id="gen-lower" checked>
+                <div class="toggle-checkbox-indicator"></div>
+                <div class="toggle-info">
+                  <span class="toggle-title">Lowercase Letters</span>
+                  <span class="toggle-sub">a b c d e f g ...</span>
+                </div>
+              </label>
+
+              <label class="toggle-card">
+                <input type="checkbox" id="gen-numbers" checked>
+                <div class="toggle-checkbox-indicator"></div>
+                <div class="toggle-info">
+                  <span class="toggle-title">Numeric Digits</span>
+                  <span class="toggle-sub">0 1 2 3 4 5 6 7 8 9</span>
+                </div>
+              </label>
+
+              <label class="toggle-card">
+                <input type="checkbox" id="gen-symbols" checked>
+                <div class="toggle-checkbox-indicator"></div>
+                <div class="toggle-info">
+                  <span class="toggle-title">Special Characters</span>
+                  <span class="toggle-sub">! @ # $ % ^ & *</span>
+                </div>
+              </label>
+
+              <label class="toggle-card full-width">
+                <input type="checkbox" id="gen-avoid-ambiguous">
+                <div class="toggle-checkbox-indicator"></div>
+                <div class="toggle-info">
+                  <span class="toggle-title">Exclude Ambiguous Characters</span>
+                  <span class="toggle-sub">Avoid visually similar glyphs: 0, O, o, 1, l, I, |</span>
+                </div>
+              </label>
+
+            </div>
+
+            <!-- Big Action Buttons -->
+            <div class="generator-actions-row">
+              <button type="button" class="btn btn-primary btn-lg flex-1" id="btn-generate-password">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                <span>Generate New Password</span>
+              </button>
+
+              <button type="button" class="btn btn-secondary btn-lg" id="btn-test-in-checker">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <polyline points="9 12 11 14 15 10"></polyline>
+                </svg>
+                <span>Test in Checker</span>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         VIEW 4: HISTORY PAGE (100% Privacy-Preserving Metadata Log)
+         ===================================================================== -->
+    <section class="view-panel" id="view-history">
+      <div class="container">
+        
+        <div class="section-header-centered">
+          <div class="badge-pill">Local Session Audit</div>
+          <h2 class="section-heading-title">Password <span class="gradient-text">Activity History</span></h2>
+          <p class="section-heading-sub">Inspect non-sensitive cryptographic evaluations and generation records stored strictly on your device.</p>
+        </div>
+
+        <!-- Privacy Commitment Notice -->
+        <div class="history-privacy-banner">
+          <div class="banner-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <div class="banner-text">
+            <strong>Strict Zero-Knowledge Privacy Guarantee:</strong>
+            <span>Your actual passwords are NEVER saved, logged, or recorded anywhere. History entries store only anonymous metadata (timestamp, length, entropy bits, and checklist statistics) in your browser's local storage.</span>
+          </div>
+        </div>
+
+        <!-- History Toolbar: Filters & Clear Button -->
+        <div class="history-toolbar">
+          <div class="history-filter-tabs">
+            <button type="button" class="history-filter-btn active" data-filter="all">All Records (<span id="count-all">0</span>)</button>
+            <button type="button" class="history-filter-btn" data-filter="check">Analyzed (<span id="count-checks">0</span>)</button>
+            <button type="button" class="history-filter-btn" data-filter="generate">Generated (<span id="count-generated">0</span>)</button>
+          </div>
+
+          <button type="button" class="btn btn-outline btn-sm btn-clear-history" id="btn-open-clear-modal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Clear History</span>
+          </button>
+        </div>
+
+        <!-- History Records Container -->
+        <div class="history-list-card">
+          <div class="history-items-container" id="history-items-container">
+            <!-- Dynamic History Cards will be injected here -->
+          </div>
+
+          <!-- Empty State (Shown when history is empty) -->
+          <div class="history-empty-state" id="history-empty-state">
+            <div class="empty-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <h3 class="empty-title">No History Records Yet</h3>
+            <p class="empty-desc">
+              Evaluate a password in the Checker or create one with the Generator to populate your on-device activity log.
+            </p>
+            <div class="empty-actions">
+              <button type="button" class="btn btn-primary btn-sm" data-navigate="checker">Analyze a Password</button>
+              <button type="button" class="btn btn-secondary btn-sm" data-navigate="generator">Generate a Password</button>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -1018,107 +761,44 @@
   </main>
 
   <!-- =========================================================================
-       5. FOOTER
+       4. CONFIRMATION MODAL (Clear History)
+       ========================================================================= -->
+  <div class="modal-backdrop" id="modal-clear-history" style="display: none;" role="dialog" aria-modal="true">
+    <div class="modal-card modal-confirm">
+      <div class="modal-header">
+        <div class="modal-warning-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <h3 class="modal-title">Clear All History?</h3>
+      </div>
+      <div class="modal-body">
+        <p>This action will permanently delete all anonymous analysis and generation logs stored on your device. This cannot be undone.</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-clear">Cancel</button>
+        <button type="button" class="btn btn-danger" id="btn-confirm-clear">Yes, Clear History</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- =========================================================================
+       5. FOOTER (Exact Requirement: "© 2026 Password Strength Checker. All Rights Reserved. Yasalapu Revanth Vardhan")
        ========================================================================= -->
   <footer class="footer">
     <div class="container footer-container">
-      <div class="footer-brand">
-        <div class="brand-text">
-          <span class="brand-name">Shield<span class="gradient-text">Pass</span></span>
-          <span class="brand-badge">PRO</span>
-        </div>
-        <p class="footer-desc">
-          <strong>Password Strength Checker</strong> — "Secure Your Digital World". Built to help users create stronger passwords and improve their digital security.
-        </p>
-      </div>
-
-      <div class="footer-links">
-        <div class="footer-col">
-          <h4>Navigation</h4>
-          <button type="button" class="footer-link-btn" data-view="dashboard">Home</button>
-          <button type="button" class="footer-link-btn" data-view="checker">Password Checker</button>
-          <button type="button" class="footer-link-btn" data-view="generator">Password Generator</button>
-          <button type="button" class="footer-link-btn" data-view="audit">Security Standards</button>
-        </div>
-        <div class="footer-col">
-          <h4>Security Standards</h4>
-          <button type="button" class="footer-link-btn" id="btn-open-privacy">Privacy Policy</button>
-          <button type="button" class="footer-link-btn" id="btn-open-about">About Project</button>
-          <span class="footer-meta-link">NIST SP 800-63B</span>
-          <span class="footer-meta-link">Zero-Knowledge</span>
-        </div>
-      </div>
-    </div>
-    
-    <div class="footer-bottom">
-      <div class="container footer-bottom-container">
-        <p>© 2026 Password Strength Checker. Built to help users create stronger passwords and improve their digital security.</p>
-        <p class="footer-note">All password analyses executed locally in your browser.</p>
-      </div>
+      <p class="footer-copyright-text">
+        &copy; 2026 Password Strength Checker. All Rights Reserved. Yasalapu Revanth Vardhan
+      </p>
     </div>
   </footer>
 
-  <!-- =========================================================================
-       5. MODALS (Privacy Policy & About Project)
-       ========================================================================= -->
-
-  <!-- Privacy Policy Modal -->
-  <div class="modal-backdrop" id="modal-privacy" style="display: none;">
-    <div class="modal-card modal-lg">
-      <div class="modal-header">
-        <h3 class="modal-title">Zero-Knowledge Privacy Commitment</h3>
-        <button type="button" class="btn-modal-close" data-close-modal="modal-privacy">&times;</button>
-      </div>
-      <div class="modal-body-scroll">
-        <h4>1. 100% Client-Side Computation</h4>
-        <p>Every strength calculation, regex check, and entropy estimate is calculated directly within your browser's JavaScript execution context.</p>
-
-        <h4>2. Zero Network Data Transmission</h4>
-        <p>No network requests (XHR, Fetch, WebSocket, or Beacon) are ever initiated with entered passwords. Passwords are never sent to any server.</p>
-
-        <h4>3. Real Cryptographic Hashing for Accounts</h4>
-        <p>User accounts use client-side PBKDF2 with SHA-256 and unique cryptographic salts (100,000 iterations). Plaintext passwords are never stored in databases or localStorage.</p>
-
-        <h4>4. Honest Scoring Disclaimer</h4>
-        <p>Strength scores are mathematical estimates based on entropy and known patterns. They provide guidance but are not a guarantee against targeted social engineering or device-level malware.</p>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-primary" data-close-modal="modal-privacy">Understood</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- About Project Modal -->
-  <div class="modal-backdrop" id="modal-about" style="display: none;">
-    <div class="modal-card modal-lg">
-      <div class="modal-header">
-        <h3 class="modal-title">About Password Strength Checker</h3>
-        <button type="button" class="btn-modal-close" data-close-modal="modal-about">&times;</button>
-      </div>
-      <div class="modal-body-scroll">
-        <h4>Mission</h4>
-        <p>
-          <strong>Password Strength Checker</strong> was built to empower users with transparent, real-time insight into credential resilience and to eliminate predictable password patterns across the web.
-        </p>
-
-        <h4>Engineering Highlights</h4>
-        <ul style="padding-left: 1.2rem; margin: 0.5rem 0 1rem; color: var(--text-muted);">
-          <li>Native Web Cryptography API (CSPRNG) for password generation.</li>
-          <li>PBKDF2-HMAC-SHA256 salted password hashing engine for account protection.</li>
-          <li>5-tier heuristic entropy model measuring character diversity, sequential runs, and dictionary resistance.</li>
-          <li>Zero external library dependencies for fast loading, maximum security, and full offline compatibility.</li>
-        </ul>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-primary" data-close-modal="modal-about">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast Notification System -->
-  <div class="toast-container" id="toast-container" aria-live="polite"></div>
-
-  <!-- JavaScript application file -->
   <script src="script.js"></script>
 </body>
 </html>
